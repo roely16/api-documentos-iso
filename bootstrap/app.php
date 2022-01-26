@@ -23,9 +23,9 @@ $app = new Laravel\Lumen\Application(
     dirname(__DIR__)
 );
 
-// $app->withFacades();
+$app->withFacades();
 
-// $app->withEloquent();
+$app->withEloquent();
 
 /*
 |--------------------------------------------------------------------------
@@ -72,6 +72,10 @@ $app->configure('app');
 |
 */
 
+$app->middleware([
+    App\Http\Middleware\CorsMiddleware::class
+]);
+
 // $app->middleware([
 //     App\Http\Middleware\ExampleMiddleware::class
 // ]);
@@ -90,6 +94,8 @@ $app->configure('app');
 | totally optional, so you are not required to uncomment this line.
 |
 */
+
+$app->register(Yajra\Oci8\Oci8ServiceProvider::class);
 
 // $app->register(App\Providers\AppServiceProvider::class);
 // $app->register(App\Providers\AuthServiceProvider::class);
