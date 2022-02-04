@@ -96,6 +96,7 @@ $app->middleware([
 */
 
 $app->register(Yajra\Oci8\Oci8ServiceProvider::class);
+$app->register(SimpleSoftwareIO\QrCode\QrCodeServiceProvider::class);
 
 // $app->register(App\Providers\AppServiceProvider::class);
 // $app->register(App\Providers\AuthServiceProvider::class);

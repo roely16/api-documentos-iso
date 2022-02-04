@@ -6,7 +6,12 @@
     "type": "project",
     "require": {
         "php": "^7.2.5",
+        "endroid/qr-code": "^3.9",
         "laravel/lumen-framework": "^7.0",
+        "league/flysystem": " ~1.0",
+        "setasign/fpdf": "1.8.*",
+        "setasign/fpdi": "^2.0",
+        "simplesoftwareio/simple-qrcode": "^4.2",
         "yajra/laravel-oci8": "7"
     },
     "require-dev": {
