@@ -28,6 +28,7 @@
 	use App\Jobs\CreateQR;
 
 	use Illuminate\Support\Facades\Crypt;
+	use Carbon\Carbon;
 
 	class UploadDocumentController extends Controller{
 		
@@ -37,7 +38,7 @@
 				
 				$empleado = Empleado::find($request->nit);
 
-				$documentos_revision = DocumentoRevision::where('USUARIOID', $empleado->usuario)->orderBy('DOCUMENTOID', 'desc')->get();
+				$documentos_revision = DocumentoRevision::where('USUARIOID', $empleado->usuario)->where('PARENT_DOCUMENTOID', null)->orderBy('DOCUMENTOID', 'desc')->get();
 
 				foreach ($documentos_revision as &$documento) {
 					
@@ -45,9 +46,23 @@
 
 					$documento->tipo_documento = $tipo_documento ? $tipo_documento->nombre : null;
 
-					$estado = EstadoDocumento::find($documento->estadoid);
+					// Validar si no tiene versiones 
+					$versiones = DocumentoRevision::where('parent_documentoid', $documento->documentoid)->orderBy('documentoid', 'desc')->get();
+
+					if ($versiones->count() > 0) {
+						
+						$child_document = $versiones[0];
+
+						$estado = EstadoDocumento::find($child_document->estadoid);
+
+					}else{
+
+						$estado = EstadoDocumento::find($documento->estadoid);
+
+					}
 
 					$documento->estado = $estado;
+					$documento->versiones = $versiones;
 
 				}
 
@@ -62,12 +77,13 @@
 						"text" => "Código",
 						"value" => "codigo",
 						"sortable" => false,
-						"width" => "12%"
+						"width" => "30%"
 					],
 					[
 						"text" => "Nombre",
 						"value" => "nombre",
-						"sortable" => false
+						"sortable" => false,
+						"width" => "30%"
 					],
 					[
 						"text" => "Tipo",
@@ -137,7 +153,6 @@
 			// Si Save es verdadero
 			$save = json_decode($request->save);
 
-				
 			$filename = 'preview.pdf';
 
 			// Carpeta donde se almacenará el archivo
@@ -170,6 +185,7 @@
 					"documento" => $documento,
 					"ajustes" => $ajustes,
 					"file_path" => $path . '/' . $filename,
+					"output_path" => $path . '/' . $filename,
 					"qr" => [
 						[
 							"tag" => "elabora",
@@ -225,15 +241,31 @@
 
 				$documento_revision = new DocumentoRevision();
 
-				$documento_revision->codigo = $documento->codigo;
-				$documento_revision->nombre = $documento->nombre;
-				$documento_revision->version = 1;
+				$documento_revision->parent_documentoid = $documento->parent_documentoid;
+
+				// Validar si el documento es una nueva versión
+				if ($documento->parent_documentoid) {
+					
+					$version_padre = DocumentoRevision::find($documento->parent_documentoid);
+
+					$documento_revision->codigo = $version_padre->codigo;
+					$documento_revision->nombre = $version_padre->nombre;
+					$documento_revision->tipodocumentoid = $version_padre->tipodocumentoid;
+
+				}else{
+
+					$documento_revision->codigo = $documento->codigo;
+					$documento_revision->nombre = $documento->nombre;
+					$documento_revision->tipodocumentoid = $documento->tipo_documento;
+
+				}
+
+				$documento_revision->version = $documento->version;
 				$documento_revision->estadoid = 1;
 				$documento_revision->codarea = $empleado->codarea;
-				$documento_revision->usuarioid = $empleado->usuario;
+				$documento_revision->usuarioid = $documento->usuario;
 				$documento_revision->elabora = $empleado->usuario;
-				$documento_revision->tipodocumentoid = $documento->tipo_documento;
-
+				
 				$documento_revision->comentarios = $documento->comentarios;
 
 				$documento_revision->documento = $pdf_path;
@@ -242,6 +274,10 @@
 				$documento_revision->documento_original = $original_path;
 				$documento_revision->nombre_original = $original_name;
 
+				// Timestamps
+				$documento_revision->created_at = Carbon::now();
+				$documento_revision->updated_at = Carbon::now();
+			
 				$documento_revision->posicion_vertical = $ajustes->posicion_vertical;
 				$documento_revision->margen_horizontal = $ajustes->margen_horizontal;
 
@@ -251,12 +287,13 @@
 					"documento" => $documento,
 					"ajustes" => $ajustes,
 					"file_path" => $path . '/' . $filename,
+					"output_path" => $path . '/' . $filename,
 					"qr" => [
 						[
 							"tag" => "elabora",
 							"label" => "Elabora",
 							"qr" => true,
-							"url" => "https://udicat.muniguate.com/apis/api-documentos-iso/public/verificar_documento/?id=" . Crypt::encrypt($documento_revision->DOCUMENTOID) . '&tag=' . "elabora",
+							"url" => 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($documento_revision->DOCUMENTOID) . '/elabora',
 							"responsable" => $empleado->nombre. ' ' . $empleado->apellido,
 							"rol" => $empleado_perfil ? $empleado_perfil->nombre : null,
 							"qr_path" => null,
@@ -332,7 +369,7 @@
 
 		public function create_pdf($data){
 
-			$documento = (object) $data->documento;
+			//$documento = (object) $data->documento;
 			$ajustes = (object) $data->ajustes;
 			$qr = (object) $data->qr;
 
@@ -423,7 +460,7 @@
 			$pdf->Ln();
 
 			// Buscar nombre de la persona que elabora
-			$elabora = Empleado::find($documento->elabora);
+			//$elabora = Empleado::find($documento->elabora);
 
 			// Obtener la altura en base al texto de mayor longitud
 
@@ -490,7 +527,7 @@
 			}
 
 			// Generá el PDF final
-			$final_pdf = $pdf->Output($data->file_path,'F');
+			$final_pdf = $pdf->Output($data->output_path, 'F');
 
 			return $qr;
 

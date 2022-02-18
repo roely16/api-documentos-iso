@@ -28,3 +28,29 @@ $router->post('/get_documentos_revision', 'UploadDocumentController@get_document
 $router->post('/get_form_create', 'UploadDocumentController@get_form_create');
 
 $router->post('/upload_document', 'UploadDocumentController@upload_document');
+
+$router->post('/get_detail_document', 'DetailDocumentController@get_detail');
+
+// Leer QR
+$router->get('/verificar_documento/{id}/{tag}', 'CheckQRController@check_qr');
+
+// Obtener las versiones de un documento
+$router->post('/document_versions', 'DocumentVersionController@get_versions');
+
+// Cambiar el estado de una versión y agregar en bitácora
+$router->post('/change_state', 'DocumentVersionController@change_state');
+
+// Obtener la bitárora de una versión
+$router->post('/get_bitacora', 'DocumentVersionController@get_bitacora');
+
+// Descargar archivo adjuntado en el registro de la bitácora
+$router->get('/download_attachment/{id}', 'DocumentVersionController@download_attachment');
+
+// Obtener los filtros
+$router->get('/get_filters', 'FilterController@get_filters');
+
+// Obtener los docuentos para el modulo de Verificar Documentos
+$router->post('/fetch_documents_check', 'CheckController@fetch_documents_check');
+
+// Obtener los documentos listos para su publicación 
+$router->post('/fetch_documents_publication', 'PublicationController@fetch_documents');
