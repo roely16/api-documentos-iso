@@ -54,3 +54,6 @@ $router->post('/fetch_documents_check', 'CheckController@fetch_documents_check')
 
 // Obtener los documentos listos para su publicación 
 $router->post('/fetch_documents_publication', 'PublicationController@fetch_documents');
+
+// Comprobar el envio de mails 
+$router->get('/test_mail', 'MailController@test_mail');

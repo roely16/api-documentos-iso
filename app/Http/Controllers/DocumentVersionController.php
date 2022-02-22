@@ -14,6 +14,8 @@
 	use DB;
 	use Carbon\Carbon;
 
+	use App\Jobs\MailJob;
+
 	class DocumentVersionController extends Controller{
 		
 		public function get_versions(Request $request){
@@ -124,11 +126,20 @@
 
 			$data = json_decode($request->data);
 
+			$documento = DocumentoRevision::find($data->id);
+
+			$usuario_registra = Empleado::where('usuario', $documento->usuarioid)->first();
+
 			$bitacora = new BitacoraDocumento();
 			$bitacora->fecha = Carbon::now();
 			$bitacora->usuarioid = $data->usuario;
 			$bitacora->documentoid = $data->id;
 			$bitacora->text_comentario = $data->comentario;
+
+			$responsable = Empleado::where('usuario', $data->usuario)->first();
+
+			$estado_anterior = null;
+			$estado = null;
 
 			// Validar si existe un cambio de estado
 			if ($data->cambio_estado) {
@@ -145,6 +156,8 @@
 
 				// Buscar el estado y verificar si debe de ejecutar una función especifica 
 				$estado = EstadoDocumento::find($data->cambio_estado);
+
+				$estado_anterior = EstadoDocumento::find($data->estado_anterior);
 
 				if ($estado->function_cr) {
 					
@@ -174,6 +187,26 @@
 				$bitacora_adjunto->save();
 
 			}
+
+			$mail_message = "# ACTUALIZACIÓN. \n Estimado(a) ".$usuario_registra->nombre. " " .$usuario_registra->apellido." se le informa que la bitácora del documento **".$documento->nombre."** ha sido actualizada.  La información agregada es la siguiente:"; 
+
+			$mail_data = [
+				[
+					"to" => $usuario_registra->emailmuni,
+					"view" => "mails.bitacora",
+					"data" => [
+						"message" => $mail_message,
+						"cambio_estado" => $data->cambio_estado,
+						"estado_anterior" => $estado_anterior ? $estado_anterior->nombre : '',
+						"estado_actual" => $estado ? $estado->nombre : '',
+						"responsable" => $responsable->nombre . ' ' . $responsable->apellido,
+						"comentario" => $bitacora->text_comentario
+					]
+				]
+			];
+
+			// Enviar correo electronico
+			$this->send_mail($mail_data);
 
 			return response()->json($data);
 
@@ -230,6 +263,12 @@
 			$adjunto = BitacoraAdjunto::find($id);
 
 			return response()->download($adjunto->path, $adjunto->nombre);
+
+		}
+
+		public function send_mail($data){
+
+			dispatch(new MailJob($data));
 
 		}
 

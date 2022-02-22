@@ -1,13 +1,19 @@
 {
     "name": "laravel/lumen",
     "description": "The Laravel Lumen Framework.",
-    "keywords": ["framework", "laravel", "lumen"],
+    "keywords": [
+        "framework",
+        "laravel",
+        "lumen"
+    ],
     "license": "MIT",
     "type": "project",
     "require": {
         "php": "^7.2.5",
         "endroid/qr-code": "^3.9",
+        "illuminate/mail": "^7.30",
         "laravel/lumen-framework": "^7.0",
+        "laravelista/lumen-vendor-publish": "7.0",
         "league/flysystem": " ~1.0",
         "setasign/fpdf": "1.8.*",
         "setasign/fpdi": "^2.0",

@@ -30,6 +30,8 @@
 	use Illuminate\Support\Facades\Crypt;
 	use Carbon\Carbon;
 
+	use App\Jobs\MailJob;
+
 	class UploadDocumentController extends Controller{
 		
 		public function get_documents_revision(Request $request){
@@ -351,6 +353,36 @@
 						"documento" => $documento_revision
 					]
 				];
+				
+				$mail_message = "# NUEVO DOCUMENTO. \n Estimado(a) Maura Chintay se le informa que se ha subido un nuevo documento en la plataforma de Documentos ISO.  Los datos del documento agregado son los siguientes:"; 
+
+				if ($documento_revision->parent_documentoid) {
+					
+					// Si el documento es una nueva versión
+					$mail_message = "# NUEVA VERSIÓN. \n Estimado(a) Maura Chintay se le informa que se ha subido una nueva versión del documento **".$documento_revision->nombre."** a la plataforma de Documentos ISO.  Los datos del documento agregado son los siguientes:"; 
+
+				}
+				
+
+				$tipo_documento = TipoDocumento::find($documento_revision->tipodocumentoid);
+				$empleado = Empleado::where('usuario', $documento_revision->elabora)->first();
+
+				$mail_data = [
+					[
+						"to" => "mlchitay@muniguate.com",
+						"view" => "mails.confirm",
+						"data" => [
+							"message" => $mail_message,
+							"nombre" => $documento_revision->nombre,
+							"codigo" => $documento_revision->codigo,
+							"tipo" => $tipo_documento->nombre,
+							"version" => $documento_revision->version,
+							"elaborado_por" => $empleado->nombre . ' ' . $empleado->apellido
+						]
+					]
+				];
+
+				$result = $this->send_mail($mail_data);
 
 				return response()->json($response, 200);
 
@@ -362,6 +394,7 @@
 				"ajustes" => $ajustes,
 				"qr" => $result,
 			];
+
 
 			return response()->json($response);
 
@@ -530,6 +563,12 @@
 			$final_pdf = $pdf->Output($data->output_path, 'F');
 
 			return $qr;
+
+		}
+
+		public function send_mail($data){
+
+			dispatch(new MailJob($data));
 
 		}
 
