@@ -57,3 +57,6 @@ $router->post('/fetch_documents_publication', 'PublicationController@fetch_docum
 
 // Comprobar el envio de mails 
 $router->get('/test_mail', 'MailController@test_mail');
+
+// Obtener el menu del usuario
+$router->post('/get_menu', 'MenuController@get_menu');
