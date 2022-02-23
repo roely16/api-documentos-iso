@@ -402,6 +402,12 @@
 
 		public function create_pdf($data){
 
+			try {
+				//code...
+			} catch (\Throwable $th) {
+				//throw $th;
+			}
+
 			//$documento = (object) $data->documento;
 			$ajustes = (object) $data->ajustes;
 			$qr = (object) $data->qr;
@@ -510,6 +516,8 @@
 
 			}
 
+			$y = 0;
+
 			// Tercera línea con nombre de quien elabora
 			foreach ($qr as $item) {
 
@@ -529,7 +537,7 @@
 			// Salto de línea
 			$pdf->Ln();
     
-			$pdf->SetXY($pdf->GetX(), $y + max($alturas_tercera_linea));
+			$pdf->SetXY($pdf->GetX(), $alturas_tercera_linea ? $y + max($alturas_tercera_linea) : $y);
 
 			// Obtener la altura en base al texto de mayor longitud
 

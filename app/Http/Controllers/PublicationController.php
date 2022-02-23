@@ -8,15 +8,20 @@
 	use App\TipoDocumento;
 	use App\EstadoDocumento;
 
+	use DB;
+
 	class PublicationController extends Controller{
 
 		public function fetch_documents(Request $request){
 
+			/*
+				* Validar registro por registro si tiene un documento hijo y el estado de este documento
+			*/
+
 			if ($request->area) {
-				
+
 				$documentos_revision = DocumentoRevision
 										::where('CODAREA', $request->area)
-										->where('PARENT_DOCUMENTOID', null)
 										->whereIn('ESTADOID', [4,5])
 										->orderBy('DOCUMENTOID', 'desc')
 										->get();
@@ -24,35 +29,58 @@
 			}else{
 
 				$documentos_revision = DocumentoRevision
-										::where('PARENT_DOCUMENTOID', null)
-										->whereIn('ESTADOID', [4,5])
+										::whereIn('ESTADOID', [4,5])
 										->orderBy('DOCUMENTOID', 'desc')
 										->get();
 
 			}
 
+			$documentos = [];
+
 			foreach ($documentos_revision as &$documento) {
+				
+				/*
+					* Validar si el documento depende de otro y asignar este como su ID
+				*/
+
+				if ($documento->parent_documentoid) {
 					
+					$documento->documentoid = $documento->parent_documentoid;
+
+				}
+
 				$tipo_documento = TipoDocumento::find($documento->tipodocumentoid);
 
 				$documento->tipo_documento = $tipo_documento ? $tipo_documento->nombre : null;
 
+				$estado = EstadoDocumento::find($documento->estadoid);
+
+				$documento->estado = $estado;
+
+				/* 
+					* Validar si la versión superior esta en un estado que no sea Autorizado o Publicado
+				*/
+
 				// Validar si no tiene versiones 
 				$versiones = DocumentoRevision::where('parent_documentoid', $documento->documentoid)->orderBy('documentoid', 'desc')->get();
+
+				$documento->versiones = $versiones;
 
 				if ($versiones->count() > 0) {
 					
 					$child_document = $versiones[0];
 
-					$estado = EstadoDocumento::find($child_document->estadoid);
+					if ($child_document->estadoid == 4 || $child_document->estadoid == 5) {
+						
+						$documentos [] = $documento;
+
+					}
 
 				}else{
 
-					$estado = EstadoDocumento::find($documento->estadoid);
+					$documentos [] = $documento;
 
 				}
-
-				$documento->estado = $estado;
 
 			}
 
@@ -100,7 +128,7 @@
 			];
 
 			$response = [
-				"items" => $documentos_revision,
+				"items" => $documentos,
 				"headers" => $headers
 			];
 

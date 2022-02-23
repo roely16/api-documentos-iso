@@ -71,12 +71,12 @@
 
 			// Headers
 			$headers = [
-				[
-					"value" => "documentoid",
-					"text" => "ID",
-					"sortable" => false,
-					"width" => "10%"
-				],
+				// [
+				// 	"value" => "documentoid",
+				// 	"text" => "ID",
+				// 	"sortable" => false,
+				// 	"width" => "10%"
+				// ],
 				[
 					"value" => "version",
 					"text" => "Versión",
@@ -221,7 +221,8 @@
 								usuarioid,
 								text_comentario,
 								estado_anterior,
-								estado_actual
+								estado_actual,
+								comentarios
 							"))
 							->where('documentoid', $request->id)
 							->orderBy('bitacoraid', 'asc')
@@ -251,6 +252,8 @@
 				}
 
 				$item->adjuntos = $adjuntos;
+
+				// Validar si el comentario es anterior y se registro en un archivo
 
 			}
 
