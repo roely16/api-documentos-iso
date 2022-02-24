@@ -60,3 +60,15 @@ $router->get('/test_mail', 'MailController@test_mail');
 
 // Obtener el menu del usuario
 $router->post('/get_menu', 'MenuController@get_menu');
+
+// Obtener las áreas para la asignación de permisos
+$router->post('/get_areas', 'PermisosController@get_areas');
+
+// Obtener las opciones del menu para la concesión de permisos
+$router->get('/get_menu_options', 'PermisosController@get_options');
+
+// Guardar los permisos
+$router->post('/save_permission', 'PermisosController@save_permission');
+
+// Obtener la lista de permisos
+$router->get('/get_permissions', 'PermisosController@get_permissions');
