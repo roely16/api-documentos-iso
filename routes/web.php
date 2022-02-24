@@ -72,3 +72,9 @@ $router->post('/save_permission', 'PermisosController@save_permission');
 
 // Obtener la lista de permisos
 $router->get('/get_permissions', 'PermisosController@get_permissions');
+
+// Obtener el detalle para la edición de los permisos
+$router->post('/get_permission_detail', 'PermisosController@get_detail');
+
+// Agregar o quitar un permiso
+$router->post('/remove_add_permission', 'PermisosController@remove_add_permission');

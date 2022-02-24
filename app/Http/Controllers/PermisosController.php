@@ -9,6 +9,8 @@
 	use App\Menu;
 	use App\Permiso;
 
+	use DB;
+
 	class PermisosController extends Controller{
 
 		public function get_areas(Request $request){
@@ -122,6 +124,57 @@
 			];
 
 			return response()->json($response);
+
+		}
+
+		public function get_detail(Request $request){
+
+			$colaborador = Empleado::where('nit', $request->usuario)->first();
+
+			// Obtener la sección o coordinación del colaborador 
+			$area = Area::find($colaborador->codarea);
+
+			$colaborador->area = $area->descripcion;
+
+			// Permisos existentes
+			$asignados = Menu::whereIn('id', Permiso::select('id_menu')->where('usuario', $request->usuario)->get()->toArray())->get();
+
+			// Accesos pendientes
+			$pendientes = Menu::whereNotIn('id', Permiso::select('id_menu')->where('usuario', $request->usuario)->get()->toArray())->get();
+
+			$response = [
+				"colaborador" => $colaborador,
+				"asignados" => $asignados,
+				"pendientes" => $pendientes
+			];
+
+			return response()->json($response);
+
+		}
+
+		public function remove_add_permission(Request $request){
+
+			// Quitar el acceso
+			if ($request->action === 'remove') {
+
+				$result = DB::connection('portales')
+							->table('ISO_DOCUMENTOS_PERMISOS')
+							->where('usuario', $request->usuario)
+							->where('id_menu', $request->id_menu)
+							->delete();
+
+				return response()->json($request);
+
+			}
+
+			// Agregar el acceso
+			$permiso = new Permiso();
+
+			$permiso->usuario = $request->usuario;
+			$permiso->id_menu = $request->id_menu;
+			$permiso->save();
+
+			return response()->json($permiso);
 
 		}
 
