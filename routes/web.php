@@ -78,3 +78,6 @@ $router->post('/get_permission_detail', 'PermisosController@get_detail');
 
 // Agregar o quitar un permiso
 $router->post('/remove_add_permission', 'PermisosController@remove_add_permission');
+
+// Validar que el usuario tiene acceso a una página en especifico 
+$router->post('/check_access', 'MenuController@check_access');
