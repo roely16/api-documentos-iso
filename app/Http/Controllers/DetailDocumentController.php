@@ -47,14 +47,6 @@
 
 			// Si el documento es el primero y no se requiere preview en el visor
 			if (!$documento->parent_documentoid && !$request->preview) {
-				
-				// Buscar la última versión
-				// $documento = DocumentoRevision
-				// 				::where('documentoid', $request->id)
-				// 				->orderBy('documentoid', 'desc')
-				// 				->get();
-
-				// $documento = $documento[0];
 
 				$codigos_qr = DocumentoQR::where('id_documento', $documento->documentoid)->orderBy('id', 'asc')->get();
 

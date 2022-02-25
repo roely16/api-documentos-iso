@@ -10,6 +10,8 @@
 	use App\TipoDocumento;
 	use App\BitacoraDocumento;
 	use App\BitacoraAdjunto;
+	use App\MenuEstado;
+	use App\Menu;
 
 	use DB;
 	use Carbon\Carbon;
@@ -59,8 +61,14 @@
 
 				$version->tipo_documento = $tipo_documento->nombre;
 
-				// Estados disponibles
-				$estados = EstadoDocumento::where('estadoid', '!=', $version->estadoid)->orderBy('estadoid', 'asc')->get();
+				// Estados disponibles para la página donde se este visualizando
+				$menu_opc = Menu::where('name', $request->route_name)->first();
+
+				$estados = EstadoDocumento
+							::where('estadoid', '!=', $version->estadoid)
+							->whereIn('estadoid', MenuEstado::select('id_estado')->where('id_menu', $menu_opc->id)->get()->toArray())
+							->orderBy('estadoid', 'asc')
+							->get();
 
 				$version->estados = $estados;
 
@@ -71,12 +79,6 @@
 
 			// Headers
 			$headers = [
-				// [
-				// 	"value" => "documentoid",
-				// 	"text" => "ID",
-				// 	"sortable" => false,
-				// 	"width" => "10%"
-				// ],
 				[
 					"value" => "version",
 					"text" => "Versión",
