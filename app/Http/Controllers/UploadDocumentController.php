@@ -402,13 +402,6 @@
 
 		public function create_pdf($data){
 
-			try {
-				//code...
-			} catch (\Throwable $th) {
-				//throw $th;
-			}
-
-			//$documento = (object) $data->documento;
 			$ajustes = (object) $data->ajustes;
 			$qr = (object) $data->qr;
 
@@ -497,9 +490,6 @@
 
 			// Salto de línea 
 			$pdf->Ln();
-
-			// Buscar nombre de la persona que elabora
-			//$elabora = Empleado::find($documento->elabora);
 
 			// Obtener la altura en base al texto de mayor longitud
 

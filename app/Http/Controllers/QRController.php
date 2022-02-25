@@ -102,11 +102,6 @@
         
 				$size_box = ($specs['width'] / 3) - ($margen_horizontal * 0.65);
 				$width_qr = 40;
-				
-				// QrCode::format('png')->generate('Make me into a QrCode!', '../public/qrcodes/qrcode.png');
-
-				// // Código QR
-				// $pdf->Cell(($specs['width'] / 3) - ($margen_horizontal * 0.65), 40, $pdf->Image('../public/qrcodes/qrcode.svg', $pdf->GetX() + (($size_box - $width_qr) / 2), $pdf->GetY(), 40, 40), 1, '', 'C');
 		
 			}
 
@@ -241,6 +236,9 @@
 								'created_at' => Carbon::now(),
 								'updated_at' => Carbon::now()
 							]);
+
+				// Generar el archivo físico con las firmas incrustadas
+
 
 				return $result;
 
