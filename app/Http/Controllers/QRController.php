@@ -3,10 +3,6 @@
 	namespace App\Http\Controllers;
 
 	use Illuminate\Http\Request;
-	// use SimpleSoftwareIO\QrCode\Facades\QrCode;
-	// use setasign\Fpdi\Fpdi;
-	
-	// include (base_path() . '/vendor/phpqrcode/qrlib.php');
 
 	use Endroid\QrCode\ErrorCorrectionLevel;
 	use Endroid\QrCode\LabelAlignment;
@@ -16,6 +12,9 @@
 	use App\Empleado;
 	use App\DocumentoQR;
 	use App\EmpleadoPerfil;
+	use App\DocumentoRevision;
+	use App\ISOSeccion;
+	use App\DocumentoPortal;
 
 	use Carbon\Carbon;
 
@@ -238,7 +237,58 @@
 							]);
 
 				// Generar el archivo físico con las firmas incrustadas
+				$documento_revision = DocumentoRevision::find($data->id_documento);
 
+				$request = new Request();
+
+				$filename =  uniqid() . '_' . $documento_revision->nombre . ".pdf";
+
+				$dir_path = __DIR__;
+
+				$pub_path = $_SERVER['DOCUMENT_ROOT'] . '/catastro/iso/documentos/' . $filename;
+
+				$request->replace([
+					"id" => $data->id_documento,
+					"preview" => false,
+					"pub_path" => $pub_path
+				]);
+
+
+				app('App\Http\Controllers\DetailDocumentController')->get_detail($request);
+
+				// Guardar en la tabla ISO_DOCUMENTOS
+				$iso_seccion = ISOSeccion::where('codarea', $documento_revision->codarea)->first();
+
+				// Buscar si ya existe algún documento con el mismo código en el portal
+				$documento_portal = DocumentoPortal
+									::where('codigo', $documento_revision->codigo)
+									->where('deleted_at', null)
+									->first();
+
+				if ($documento_portal) {
+					
+					// Actualizar el documento existente
+					$result_update = DB::connection('portales')
+										->table('ISO_DOCUMENTOS')
+										->where('codigo', $documento_revision->codigo)
+										->update([
+											'deleted_at' => Carbon::now()
+										]);
+
+				}
+
+				// Crear un nuevo registro
+				$documento_portal = new DocumentoPortal();
+				$documento_portal->nombre = $documento_revision->codigo . ' ' .  $documento_revision->nombre;
+				$documento_portal->categoriaid = $iso_seccion->seccionid;
+				$documento_portal->archivo = $filename;
+				$documento_portal->creado = Carbon::now();
+				$documento_portal->modificado = Carbon::now();
+				$documento_portal->portalid = 1;
+				$documento_portal->codigo = $documento_revision->codigo;
+				$documento_portal->codarea = 0;
+				$documento_portal->id_documento_revision = $documento_revision->documentoid;
+				$documento_portal->save();
 
 				return $result;
 
@@ -247,7 +297,6 @@
 				return $th->getMessage();
 
 			}
-
 
 		}
 

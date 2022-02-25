@@ -81,7 +81,7 @@
 
 			}
 
-			$output_path = 'temp_files/' . uniqid() .'_preview.pdf';
+			$output_path = $request->pub_path ? $request->pub_path : 'temp_files/' . uniqid() .'_preview.pdf';
 
 			$data = (object) [
 				"ajustes" => [
