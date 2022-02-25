@@ -81,3 +81,9 @@ $router->post('/remove_add_permission', 'PermisosController@remove_add_permissio
 
 // Validar que el usuario tiene acceso a una página en especifico 
 $router->post('/check_access', 'MenuController@check_access');
+
+// Obtener el acronimo del tipo de documento
+$router->post('/get_acronimo_tipo', 'CodigoController@get_acronimo_tipo');
+
+// Obtener el acronimo de la sección 
+$router->post('/get_acronimo_seccion', 'CodigoController@get_acronimo_seccion');
