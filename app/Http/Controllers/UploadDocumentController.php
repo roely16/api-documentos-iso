@@ -152,6 +152,10 @@
 
 		public function upload_document(Request $request){
 
+			$documento = json_decode($request->documento);
+
+			$ajustes = json_decode($request->settings);
+
 			// Si Save es verdadero
 			$save = json_decode($request->save);
 
@@ -166,10 +170,6 @@
 			$file = $request->file('file');
 
 			move_uploaded_file($request->file('file_preview'), $path . '/' . $filename);
-			
-			$documento = json_decode($request->documento);
-
-			$ajustes = json_decode($request->settings);
 
 			// Información del Empleado que Elabora
 
@@ -226,7 +226,6 @@
 
 			}
 
-
 			if ($save) {
 
 				// Subir documento en PDF
@@ -262,6 +261,13 @@
 
 				}
 
+				
+				/*
+					* Se deberá de determinar si el tipo de documento requiere QR
+				*/
+
+				$tipo_documento = TipoDocumento::find($documento_revision->tipodocumentoid);
+
 				$documento_revision->version = $documento->version;
 				$documento_revision->estadoid = 1;
 				$documento_revision->codarea = $empleado->codarea;
@@ -279,71 +285,79 @@
 				// Timestamps
 				$documento_revision->created_at = Carbon::now();
 				$documento_revision->updated_at = Carbon::now();
-			
-				$documento_revision->posicion_vertical = $ajustes->posicion_vertical;
-				$documento_revision->margen_horizontal = $ajustes->margen_horizontal;
+				
+				if ($tipo_documento->generar_qr) {
+					
+					$documento_revision->posicion_vertical = $ajustes->posicion_vertical;
+					$documento_revision->margen_horizontal = $ajustes->margen_horizontal;
+
+				}
 
 				$documento_revision->save();
 
-				$job_data = (object) [
-					"documento" => $documento,
-					"ajustes" => $ajustes,
-					"file_path" => $path . '/' . $filename,
-					"output_path" => $path . '/' . $filename,
-					"qr" => [
-						[
-							"tag" => "elabora",
-							"label" => "Elabora",
-							"qr" => true,
-							"url" => 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($documento_revision->DOCUMENTOID) . '/elabora',
-							"responsable" => $empleado->nombre. ' ' . $empleado->apellido,
-							"rol" => $empleado_perfil ? $empleado_perfil->nombre : null,
-							"qr_path" => null,
-							"nit" => $empleado->nit,
-							"usuario" => $empleado->usuario,
-							"perfil" => $empleado_perfil ? $empleado_perfil->id : null
-						],
-						[
-							"tag" => "revisa",
-							"label" => "Revisa",
-							"qr" => false,
-							"url" => null,
-							"responsable" => null,
-							"rol" => null,
-							"qr_path" => null
-						],
-						[
-							"tag" => "aprueba",
-							"label" => "Aprueba",
-							"qr" => false,
-							"url" => null,
-							"responsable" => null,
-							"rol" => null,
-							"qr_path" => null
-						]
-					]
-				];
-	
-				$result = $this->create_pdf($job_data);
-
-				// Registrar la información de cada QR generado 
-				foreach ($result as $item) {
+				if ($tipo_documento->generar_qr) {
 					
-					$documento_qr = new DocumentoQR();
-
-					$documento_qr->id_documento = $documento_revision->DOCUMENTOID;
-					$documento_qr->etiqueta = $item["tag"];
-
-					if ($item["qr"]) {
+					$job_data = (object) [
+						"documento" => $documento,
+						"ajustes" => $ajustes,
+						"file_path" => $path . '/' . $filename,
+						"output_path" => $path . '/' . $filename,
+						"qr" => [
+							[
+								"tag" => "elabora",
+								"label" => "Elabora",
+								"qr" => true,
+								"url" => 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($documento_revision->DOCUMENTOID) . '/elabora',
+								"responsable" => $empleado->nombre. ' ' . $empleado->apellido,
+								"rol" => $empleado_perfil ? $empleado_perfil->nombre : null,
+								"qr_path" => null,
+								"nit" => $empleado->nit,
+								"usuario" => $empleado->usuario,
+								"perfil" => $empleado_perfil ? $empleado_perfil->id : null
+							],
+							[
+								"tag" => "revisa",
+								"label" => "Revisa",
+								"qr" => false,
+								"url" => null,
+								"responsable" => null,
+								"rol" => null,
+								"qr_path" => null
+							],
+							[
+								"tag" => "aprueba",
+								"label" => "Aprueba",
+								"qr" => false,
+								"url" => null,
+								"responsable" => null,
+								"rol" => null,
+								"qr_path" => null
+							]
+						]
+					];
+		
+					$result = $this->create_pdf($job_data);
+	
+					// Registrar la información de cada QR generado 
+					foreach ($result as $item) {
 						
-						$documento_qr->path_qr = $item["qr_path"];
-						$documento_qr->url_qr = $item["url"];
-						$documento_qr->responsable_firma = $item["usuario"];
-						$documento_qr->rol_responsable = $item["perfil"];
-
+						$documento_qr = new DocumentoQR();
+	
+						$documento_qr->id_documento = $documento_revision->DOCUMENTOID;
+						$documento_qr->etiqueta = $item["tag"];
+	
+						if ($item["qr"]) {
+							
+							$documento_qr->path_qr = $item["qr_path"];
+							$documento_qr->url_qr = $item["url"];
+							$documento_qr->responsable_firma = $item["usuario"];
+							$documento_qr->rol_responsable = $item["perfil"];
+	
+						}
+	
+						$documento_qr->save();
+	
 					}
-
-					$documento_qr->save();
 
 				}
 
