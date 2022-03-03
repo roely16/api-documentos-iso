@@ -36,11 +36,23 @@
 			$tipo_documento = TipoDocumento::find($documento_revision->{'tipo de documento'});
 			$documento_revision->{'tipo de documento'} = $tipo_documento->nombre;
 
-			// Generar nuevamente el pdf con los qr 
-			$upload_controller = new UploadDocumentController();
-
 			// Buscar el documento
 			$documento = DocumentoRevision::find($request->id);
+
+			// if (!$tipo_documento->generar_qr) {
+				
+			// 	$response = [
+			// 		"documento" => $documento_revision,
+			// 		"full_document" => $documento,
+			// 		"pdf_path" => 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/' . $documento->documento,
+			// 	];
+
+			// 	return response()->json($response, 200);
+
+			// }
+
+			// Generar nuevamente el pdf con los qr 
+			$upload_controller = new UploadDocumentController();
 
 			// Buscar la información de los QR generados previamente
 			$codigos_qr = DocumentoQR::where('id_documento', $request->id)->orderBy('id', 'asc')->get();

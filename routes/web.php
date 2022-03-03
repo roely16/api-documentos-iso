@@ -87,3 +87,6 @@ $router->post('/get_acronimo_tipo', 'CodigoController@get_acronimo_tipo');
 
 // Obtener el acronimo de la sección 
 $router->post('/get_acronimo_seccion', 'CodigoController@get_acronimo_seccion');
+
+// Validar el tipo de documento y si se generar QR
+$router->post('/check_qr_document_type', 'DocumentVersionController@check_qr_document_type');

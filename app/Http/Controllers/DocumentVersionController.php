@@ -170,6 +170,8 @@
 
 					$datos = app("App\Http\Controllers" . $estado->controller)->{$estado->function_cr}($data_);
 
+					return response()->json($datos);
+
 				}
 
 			}
@@ -274,6 +276,19 @@
 		public function send_mail($data){
 
 			dispatch(new MailJob($data));
+
+		}
+
+		public function check_qr_document_type(Request $request){
+
+			$tipo_documento = TipoDocumento::find($request->tipo_documento);
+
+			$response = [
+				"qr" => $tipo_documento->generar_qr == 'S' ? true : false
+			];
+
+			return response()->json($response);
+
 
 		}
 

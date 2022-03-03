@@ -15,6 +15,7 @@
 	use App\DocumentoRevision;
 	use App\ISOSeccion;
 	use App\DocumentoPortal;
+	use App\TipoDocumento;
 
 	use Carbon\Carbon;
 
@@ -158,39 +159,54 @@
 
 			try {
 			
-				$documento_qr = DocumentoQR::where('id_documento', $data->id_documento)->where('etiqueta', 'revisa')->first();
+				/*
+					* Validar si es necesario crear el QR
+				*/
 
-				$empleado = Empleado::where('usuario', $data->usuario)->first();
+				$documento = DocumentoRevision::find($data->id_documento);
 
-				$perfil = EmpleadoPerfil::where('nit', $empleado->nit)->first();
+				$tipo_documento = TipoDocumento::find($documento->tipodocumentoid);
 
-				$url = 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($data->id_documento) . '/revisa';
+				if ($tipo_documento->generar_qr) {
+					
+					$documento_qr = DocumentoQR::where('id_documento', $data->id_documento)->where('etiqueta', 'revisa')->first();
 
-				$qrCode = new QrCode($url);
+					$empleado = Empleado::where('usuario', $data->usuario)->first();
+
+					$perfil = EmpleadoPerfil::where('nit', $empleado->nit)->first();
+
+					$url = 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($data->id_documento) . '/revisa';
+
+					$qrCode = new QrCode($url);
+					
+					$qrCode->setSize(300);
+					$qrCode->setMargin(10); 
+					$qrCode->setWriterByName('png');
+
+					$qr_name = uniqid() . '.png';
+					$qrCode->writeFile(base_path('public') . '/qrcodes/' . $qr_name);
+
+					// Actualizar el registro
+
+					$result = DB::connection('portales')
+								->table('ISO_DOCUMENTO_QR')
+								->where('id_documento', $data->id_documento)
+								->where('etiqueta', 'revisa')
+								->update([
+									'path_qr' =>'/qrcodes/' . $qr_name,
+									'url_qr' => $url,
+									'responsable_firma' => $empleado->usuario,
+									'rol_responsable' => $perfil->id_perfil,
+									'created_at' => Carbon::now(),
+									'updated_at' => Carbon::now()
+								]);
+
+					return $result;
+
+				}
+
+				return true;
 				
-				$qrCode->setSize(300);
-				$qrCode->setMargin(10); 
-				$qrCode->setWriterByName('png');
-
-				$qr_name = uniqid() . '.png';
-				$qrCode->writeFile(base_path('public') . '/qrcodes/' . $qr_name);
-
-				// Actualizar el registro
-
-				$result = DB::connection('portales')
-							->table('ISO_DOCUMENTO_QR')
-							->where('id_documento', $data->id_documento)
-							->where('etiqueta', 'revisa')
-							->update([
-								'path_qr' =>'/qrcodes/' . $qr_name,
-								'url_qr' => $url,
-								'responsable_firma' => $empleado->usuario,
-								'rol_responsable' => $perfil->id_perfil,
-								'created_at' => Carbon::now(),
-								'updated_at' => Carbon::now()
-							]);
-
-				return $result;
 
 			} catch (\Throwable $th) {
 				
@@ -203,39 +219,52 @@
 		public function aprueba($data){
 
 			try {
-			
-				$documento_qr = DocumentoQR::where('id_documento', $data->id_documento)->where('etiqueta', 'aprueba')->first();
-
-				$empleado = Empleado::where('usuario', $data->usuario)->first();
-
-				$perfil = EmpleadoPerfil::where('nit', $empleado->nit)->first();
-
-				$url = 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($data->id_documento) . '/aprueba';
-
-				$qrCode = new QrCode($url);
 				
-				$qrCode->setSize(300);
-				$qrCode->setMargin(10); 
-				$qrCode->setWriterByName('png');
+				/*
+					* Validar si es necesario crear el QR
+				*/
 
-				$qr_name = uniqid() . '.png';
-				$qrCode->writeFile(base_path('public') . '/qrcodes/' . $qr_name);
+				$documento = DocumentoRevision::find($data->id_documento);
 
-				// Actualizar el registro
+				$tipo_documento = TipoDocumento::find($documento->tipodocumentoid);
 
-				$result = DB::connection('portales')
-							->table('ISO_DOCUMENTO_QR')
-							->where('id_documento', $data->id_documento)
-							->where('etiqueta', 'aprueba')
-							->update([
-								'path_qr' =>'/qrcodes/' . $qr_name,
-								'url_qr' => $url,
-								'responsable_firma' => $empleado->usuario,
-								'rol_responsable' => $perfil->id_perfil,
-								'created_at' => Carbon::now(),
-								'updated_at' => Carbon::now()
-							]);
+				if ($tipo_documento->generar_qr) {
+					
+					$documento_qr = DocumentoQR::where('id_documento', $data->id_documento)->where('etiqueta', 'aprueba')->first();
 
+					$empleado = Empleado::where('usuario', $data->usuario)->first();
+
+					$perfil = EmpleadoPerfil::where('nit', $empleado->nit)->first();
+
+					$url = 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($data->id_documento) . '/aprueba';
+
+					$qrCode = new QrCode($url);
+					
+					$qrCode->setSize(300);
+					$qrCode->setMargin(10); 
+					$qrCode->setWriterByName('png');
+
+					$qr_name = uniqid() . '.png';
+					$qrCode->writeFile(base_path('public') . '/qrcodes/' . $qr_name);
+
+					// Actualizar el registro
+
+					DB::connection('portales')
+								->table('ISO_DOCUMENTO_QR')
+								->where('id_documento', $data->id_documento)
+								->where('etiqueta', 'aprueba')
+								->update([
+									'path_qr' =>'/qrcodes/' . $qr_name,
+									'url_qr' => $url,
+									'responsable_firma' => $empleado->usuario,
+									'rol_responsable' => $perfil->id_perfil,
+									'created_at' => Carbon::now(),
+									'updated_at' => Carbon::now()
+								]);
+
+				
+				}
+				
 				// Generar el archivo físico con las firmas incrustadas
 				$documento_revision = DocumentoRevision::find($data->id_documento);
 
@@ -253,8 +282,7 @@
 					"pub_path" => $pub_path
 				]);
 
-
-				app('App\Http\Controllers\DetailDocumentController')->get_detail($request);
+				$result_request = app('App\Http\Controllers\DetailDocumentController')->get_detail($request);
 
 				// Guardar en la tabla ISO_DOCUMENTOS
 				$iso_seccion = ISOSeccion::where('codarea', $documento_revision->codarea)->first();
@@ -290,7 +318,7 @@
 				$documento_portal->id_documento_revision = $documento_revision->documentoid;
 				$documento_portal->save();
 
-				return $result;
+				return $documento_portal;
 
 			} catch (\Throwable $th) {
 				
