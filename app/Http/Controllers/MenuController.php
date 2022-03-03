@@ -11,7 +11,7 @@
 		
 		public function get_menu(Request $request){
 
-			$menu = Menu::whereIn('id', Permiso::select('id_menu')->where('usuario', $request->user)->get()->toArray())->get();
+			$menu = Menu::whereIn('id', Permiso::select('id_menu')->where('usuario', $request->user)->get()->toArray())->orderBy('orden', 'asc')->get();
 
 			return response()->json($menu);
 
