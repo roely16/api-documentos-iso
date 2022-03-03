@@ -102,14 +102,14 @@
 					"value" => "created_at",
 					"text" => "Fecha",
 					"sortable" => false,
-					"width" => "20%"
+					"width" => "15%"
 				],
 				[
 					"value" => "action",
 					"text" => "Acción",
 					"align" => "right",
 					"sortable" => false,
-					"width" => "10%",
+					"width" => "15%",
 					"custom" => true
 				]
 			];
@@ -289,6 +289,24 @@
 
 			return response()->json($response);
 
+
+		}
+
+		public function download_document($id, $option){
+
+			$documento = DocumentoRevision::find($id);
+
+			if ($option == 'pdf' && $documento->documento) {
+				
+				return response()->download($documento->documento, $documento->nombre_pdf ? $documento->nombre_pdf : null);
+
+			}
+
+			if ($option == 'original' && $documento->documento_original) {
+				
+				return response()->download($documento->documento_original, $documento->nombre_original ? $documento->nombre_original : null);
+
+			}
 
 		}
 

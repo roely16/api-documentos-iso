@@ -90,3 +90,6 @@ $router->post('/get_acronimo_seccion', 'CodigoController@get_acronimo_seccion');
 
 // Validar el tipo de documento y si se generar QR
 $router->post('/check_qr_document_type', 'DocumentVersionController@check_qr_document_type');
+
+// Descargar el documento en PDF o el Original
+$router->get('/download_document/{id}/{option}', 'DocumentVersionController@download_document');
