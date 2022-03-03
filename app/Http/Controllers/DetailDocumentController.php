@@ -25,7 +25,8 @@
 										codigo as "código",
 										nombre,
 										codarea as "sección",
-										tipodocumentoid as "tipo de documento"
+										tipodocumentoid as "tipo de documento", 
+										comentarios
 									'))
 									->where('documentoid', $request->id)
 									->first();			
