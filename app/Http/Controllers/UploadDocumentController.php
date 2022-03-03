@@ -338,8 +338,10 @@
 		
 					$result = $this->create_pdf($job_data);
 	
+					$result_qr = $result["qr"];
+
 					// Registrar la información de cada QR generado 
-					foreach ($result as $item) {
+					foreach ($result_qr as $item) {
 						
 						$documento_qr = new DocumentoQR();
 	
