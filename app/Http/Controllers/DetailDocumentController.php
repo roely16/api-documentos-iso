@@ -39,17 +39,17 @@
 			// Buscar el documento
 			$documento = DocumentoRevision::find($request->id);
 
-			// if (!$tipo_documento->generar_qr) {
-				
-			// 	$response = [
-			// 		"documento" => $documento_revision,
-			// 		"full_document" => $documento,
-			// 		"pdf_path" => 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/' . $documento->documento,
-			// 	];
+			if (!$tipo_documento->generar_qr) {
 
-			// 	return response()->json($response, 200);
+				$response = [
+					"documento" => $documento_revision,
+					"full_document" => $documento,
+					"pdf_path" => 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/' . $documento->documento,
+				];
 
-			// }
+				return response()->json($response, 200);
+
+			}
 
 			// Generar nuevamente el pdf con los qr 
 			$upload_controller = new UploadDocumentController();
@@ -111,6 +111,7 @@
 				"documento" => $documento_revision,
 				"full_document" => $documento,
 				"pdf_path" => 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/' . $output_path . '#toolbar=0&navpanes=0&scrollbar=0',
+				"error_pdf" => $result["status"] == 100 ? true : false
 			];
 
 			return response()->json($response, 200);

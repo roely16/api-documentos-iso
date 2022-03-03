@@ -406,7 +406,8 @@
 				"path_preview" => 'http://' . $destinationPath . '/' . $filename,
 				"documento" => $documento,
 				"ajustes" => $ajustes,
-				"qr" => $result,
+				//"qr" => $result,
+				"error_pdf" => $result["status"] == 100 ? true : false
 			];
 
 
@@ -419,9 +420,22 @@
 			$ajustes = (object) $data->ajustes;
 			$qr = (object) $data->qr;
 
-			$pdf = new Fpdi();
-			$paginas = $pdf->setSourceFile($data->file_path);
+			try {
+				
+				$pdf = new Fpdi();
+				$paginas = $pdf->setSourceFile($data->file_path);
 
+			} catch (\Throwable $th) {
+				
+				$response = [
+					"status" => 100,
+					"error" => $th->getMessage()
+				];
+
+				return $response;
+
+			}
+			
 			$altura_linea = 7;
 
 			// Agregar cada  una de las páginas del PDF
@@ -574,7 +588,12 @@
 			// Generá el PDF final
 			$final_pdf = $pdf->Output($data->output_path, 'F');
 
-			return $qr;
+			$response = [
+				"status" => 200,
+				"qr" => $qr
+			];
+
+			return $response;
 
 		}
 

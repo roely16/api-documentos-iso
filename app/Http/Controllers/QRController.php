@@ -276,13 +276,24 @@
 
 				$pub_path = $_SERVER['DOCUMENT_ROOT'] . '/catastro/iso/documentos/' . $filename;
 
-				$request->replace([
-					"id" => $data->id_documento,
-					"preview" => false,
-					"pub_path" => $pub_path
-				]);
+				// Si el documento NO lleva QR
 
-				$result_request = app('App\Http\Controllers\DetailDocumentController')->get_detail($request);
+				if (!$tipo_documento->generar_qr) {
+					
+					copy($documento_revision->documento, $pub_path);
+
+				}else{
+
+					$request->replace([
+						"id" => $data->id_documento,
+						"preview" => false,
+						"pub_path" => $pub_path
+					]);
+	
+					$result_request = app('App\Http\Controllers\DetailDocumentController')->get_detail($request);
+
+				}
+				
 
 				// Guardar en la tabla ISO_DOCUMENTOS
 				$iso_seccion = ISOSeccion::where('codarea', $documento_revision->codarea)->first();
