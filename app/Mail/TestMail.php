@@ -23,7 +23,7 @@
 		public function build(){
 
 			
-			return $this->markdown($this->view_name, ['header' => "Header"])->with($this->data);
+			return $this->subject('Control de Documentos ISO')->markdown($this->view_name, ['header' => "Header"])->with($this->data);
 
 		}
 
