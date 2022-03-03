@@ -15,7 +15,7 @@
 
 		public function get_areas(Request $request){
 
-			$areas = Area::where('estatus', 'A')->where('ISO', '1')->orderBy('descripcion', 'asc')->get();
+			$areas = Area::where('estatus', 'A')->orderBy('descripcion', 'asc')->get();
 
 			foreach ($areas as &$area) {
 								
