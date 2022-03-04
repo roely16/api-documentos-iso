@@ -10,6 +10,7 @@
 	use App\DocumentoRevision;
 	use App\Empleado;
 	use App\Perfil;
+	use App\RolAlterno;
 
 	class CheckQRController extends Controller{
 		
@@ -25,7 +26,7 @@
 
 				$empleado = Empleado::where('usuario', $documento_qr->responsable_firma)->first();
 
-				$perfil = Perfil::find($documento_qr->rol_responsable);
+				$perfil = !$documento_qr->rol_alternativo ? Perfil::find($documento_qr->rol_responsable) : RolAlterno::find($documento_qr->rol_alternativo);
 
 				$response = [
 					"documento" => $documento,

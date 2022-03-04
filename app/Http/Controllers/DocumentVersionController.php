@@ -170,8 +170,6 @@
 
 					$datos = app("App\Http\Controllers" . $estado->controller)->{$estado->function_cr}($data_);
 
-					return response()->json($datos);
-
 				}
 
 			}

@@ -62,7 +62,7 @@
 									Cargo: 
 								</th>
 								<td>
-									{{ $perfil->nombre }}
+									{{ !$qr->rol_alternativo ? $perfil->nombre : $perfil->rol }}
 								</td>
 							</tr>
 							<tr>

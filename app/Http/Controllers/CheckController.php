@@ -7,6 +7,9 @@
 	use App\DocumentoRevision;
 	use App\TipoDocumento;
 	use App\EstadoDocumento;
+	use App\ResponsableRevision;
+	use App\Area;
+	use App\Menu;
 
 	class CheckController extends Controller{
 
@@ -18,12 +21,32 @@
 
 			}else{
 
-				$documentos_revision = DocumentoRevision::where('PARENT_DOCUMENTOID', null)->orderBy('DOCUMENTOID', 'desc')->get();
+				// Obtener las áreas o secciones asignadas
+				$menu = Menu::where('name', $request->module)->first();
+
+				$areas = Area::select('codarea')
+							->where('estatus', 'A')
+							->whereIn('codarea', ResponsableRevision
+													::select('codarea')
+													->where('responsable', $request->usuario)
+													->where('modulo', $menu->id)
+													->get()
+													->toArray()
+							)
+							->orderBy('codarea', 'asc')
+							->get()
+							->toArray();
+
+				$documentos_revision = DocumentoRevision
+										::where('PARENT_DOCUMENTOID', null)
+										->whereIn('CODAREA', $areas)
+										->orderBy('DOCUMENTOID', 'desc')
+										->get();
 
 			}
 
 			foreach ($documentos_revision as &$documento) {
-					
+				
 				$tipo_documento = TipoDocumento::find($documento->tipodocumentoid);
 
 				$documento->tipo_documento = $tipo_documento ? $tipo_documento->nombre : null;
@@ -45,6 +68,10 @@
 
 				$documento->estado = $estado;
 
+				$area = Area::find($documento->codarea);
+
+				$documento->seccion = $area->descripcion;
+
 			}
 
 			$headers = [
@@ -58,13 +85,19 @@
 					"text" => "Código",
 					"value" => "codigo",
 					"sortable" => false,
-					"width" => "30%"
+					"width" => "10%"
 				],
 				[
 					"text" => "Nombre",
 					"value" => "nombre",
 					"sortable" => false,
 					"width" => "30%"
+				],
+				[
+					"text" => "Sección o Coordinación",
+					"value" => "seccion",
+					"sortable" => false,
+					"width" => "20%"
 				],
 				[
 					"text" => "Tipo",

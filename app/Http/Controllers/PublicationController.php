@@ -7,6 +7,9 @@
 	use App\DocumentoRevision;
 	use App\TipoDocumento;
 	use App\EstadoDocumento;
+	use App\ResponsableRevision;
+	use App\Area;
+	use App\Menu;
 
 	use DB;
 
@@ -22,14 +25,30 @@
 
 				$documentos_revision = DocumentoRevision
 										::where('CODAREA', $request->area)
-										->whereIn('ESTADOID', [4,5])
+										->whereIn('ESTADOID', [4])
 										->orderBy('DOCUMENTOID', 'desc')
 										->get();
 
 			}else{
 
+				$menu = Menu::where('name', $request->module)->first();
+
+				$areas = Area::select('codarea')
+							->where('estatus', 'A')
+							->whereIn('codarea', ResponsableRevision
+													::select('codarea')
+													->where('responsable', $request->usuario)
+													->where('modulo', $menu->id)
+													->get()
+													->toArray()
+							)
+							->orderBy('codarea', 'asc')
+							->get()
+							->toArray();
+
 				$documentos_revision = DocumentoRevision
-										::whereIn('ESTADOID', [4,5])
+										::whereIn('ESTADOID', [4])
+										->whereIn('CODAREA', $areas)
 										->orderBy('DOCUMENTOID', 'desc')
 										->get();
 
@@ -56,6 +75,10 @@
 				$estado = EstadoDocumento::find($documento->estadoid);
 
 				$documento->estado = $estado;
+
+				$area = Area::find($documento->codarea);
+
+				$documento->seccion = $area->descripcion;
 
 				/* 
 					* Validar si la versión superior esta en un estado que no sea Autorizado o Publicado
@@ -95,13 +118,19 @@
 					"text" => "Código",
 					"value" => "codigo",
 					"sortable" => false,
-					"width" => "30%"
+					"width" => "10%"
 				],
 				[
 					"text" => "Nombre",
 					"value" => "nombre",
 					"sortable" => false,
 					"width" => "30%"
+				],
+				[
+					"text" => "Sección o Coordinación",
+					"value" => "seccion",
+					"sortable" => false,
+					"width" => "20%"
 				],
 				[
 					"text" => "Tipo",

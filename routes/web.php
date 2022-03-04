@@ -47,7 +47,7 @@ $router->post('/get_bitacora', 'DocumentVersionController@get_bitacora');
 $router->get('/download_attachment/{id}', 'DocumentVersionController@download_attachment');
 
 // Obtener los filtros
-$router->get('/get_filters', 'FilterController@get_filters');
+$router->post('/get_filters', 'FilterController@get_filters');
 
 // Obtener los docuentos para el modulo de Verificar Documentos
 $router->post('/fetch_documents_check', 'CheckController@fetch_documents_check');

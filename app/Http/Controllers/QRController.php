@@ -16,6 +16,7 @@
 	use App\ISOSeccion;
 	use App\DocumentoPortal;
 	use App\TipoDocumento;
+	use App\RolAlterno;
 
 	use Carbon\Carbon;
 
@@ -173,6 +174,11 @@
 
 					$empleado = Empleado::where('usuario', $data->usuario)->first();
 
+					/*
+						* Buscar si la persona tiene un rol alternativo
+					*/
+					$rol_alterno = RolAlterno::where('usuario', $empleado->usuario)->first();
+
 					$perfil = EmpleadoPerfil::where('nit', $empleado->nit)->first();
 
 					$url = 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($data->id_documento) . '/revisa';
@@ -196,7 +202,7 @@
 									'path_qr' =>'/qrcodes/' . $qr_name,
 									'url_qr' => $url,
 									'responsable_firma' => $empleado->usuario,
-									'rol_responsable' => $perfil->id_perfil,
+									!$rol_alterno ? 'rol_responsable' : 'rol_alternativo' => !$rol_alterno ? $perfil->id_perfil : $rol_alterno->id,
 									'created_at' => Carbon::now(),
 									'updated_at' => Carbon::now()
 								]);
@@ -234,6 +240,11 @@
 
 					$empleado = Empleado::where('usuario', $data->usuario)->first();
 
+					/*
+						* Buscar si la persona tiene un rol alternativo
+					*/
+					$rol_alterno = RolAlterno::where('usuario', $empleado->usuario)->first();
+
 					$perfil = EmpleadoPerfil::where('nit', $empleado->nit)->first();
 
 					$url = 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($data->id_documento) . '/aprueba';
@@ -257,7 +268,7 @@
 									'path_qr' =>'/qrcodes/' . $qr_name,
 									'url_qr' => $url,
 									'responsable_firma' => $empleado->usuario,
-									'rol_responsable' => $perfil->id_perfil,
+									!$rol_alterno ? 'rol_responsable' : 'rol_alternativo' => !$rol_alterno ? $perfil->id_perfil : $rol_alterno->id,
 									'created_at' => Carbon::now(),
 									'updated_at' => Carbon::now()
 								]);

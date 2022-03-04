@@ -11,6 +11,7 @@
 	use App\Perfil;
 	use App\EmpleadoPerfil;
 	use App\DocumentoQR;
+	use App\RolAlterno;
 
 	use setasign\Fpdi\Fpdi;
 	
@@ -175,6 +176,11 @@
 
 			$empleado = Empleado::find($documento->elabora);
 
+			/*
+				* Buscar el rol alternativo
+			*/
+			$rol_alterno = RolAlterno::where('usuario', $empleado->usuario)->first();
+
 			$empleado_perfil = EmpleadoPerfil
 								::select('rrhh_perfil.id', 'rrhh_perfil.nombre')
 								->join('rrhh_perfil', 'rh_empleado_perfil.id_perfil', '=', 'rrhh_perfil.id')
@@ -195,7 +201,7 @@
 							"qr" => true,
 							"url" => "https://udicat.muniguate.com/?id=" . uniqid(),
 							"responsable" => $empleado->nombre. ' ' . $empleado->apellido,
-							"rol" => $empleado_perfil ? $empleado_perfil->nombre : null,
+							"rol" => $rol_alterno  ? $rol_alterno->rol : ($empleado_perfil ? $empleado_perfil->nombre : null),
 							"qr_path" => null,
 							"nit" => $empleado->nit,
 							"usuario" => $empleado->usuario,
@@ -270,7 +276,7 @@
 
 				$documento_revision->version = $documento->version;
 				$documento_revision->estadoid = 1;
-				$documento_revision->codarea = $empleado->codarea;
+				$documento_revision->codarea = $documento->usuario == 'OSANCHEZ' ? 7 : $empleado->codarea;
 				$documento_revision->usuarioid = $documento->usuario;
 				$documento_revision->elabora = $empleado->usuario;
 				
@@ -309,7 +315,7 @@
 								"qr" => true,
 								"url" => 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($documento_revision->DOCUMENTOID) . '/elabora',
 								"responsable" => $empleado->nombre. ' ' . $empleado->apellido,
-								"rol" => $empleado_perfil ? $empleado_perfil->nombre : null,
+								"rol" => $rol_alterno  ? $rol_alterno->rol : ($empleado_perfil ? $empleado_perfil->nombre : null),
 								"qr_path" => null,
 								"nit" => $empleado->nit,
 								"usuario" => $empleado->usuario,
@@ -353,8 +359,17 @@
 							$documento_qr->path_qr = $item["qr_path"];
 							$documento_qr->url_qr = $item["url"];
 							$documento_qr->responsable_firma = $item["usuario"];
-							$documento_qr->rol_responsable = $item["perfil"];
-	
+
+							if ($rol_alterno) {
+								
+								$documento_qr->rol_alternativo = $rol_alterno->id;
+
+							}else{
+
+								$documento_qr->rol_responsable = $item["perfil"];
+
+							}
+							
 						}
 	
 						$documento_qr->save();

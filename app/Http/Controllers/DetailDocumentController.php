@@ -11,6 +11,7 @@
 	use App\Area;
 	use App\DocumentoQR;
 	use App\Perfil;
+	use App\RolAlterno;
 
 	use DB;
 
@@ -69,12 +70,23 @@
 
 			foreach ($codigos_qr as $codigo) {
 				
+				$nombre_rol = null;
+
 				if ($codigo->path_qr) {
 					
 					$empleado = Empleado::where('usuario', $codigo->responsable_firma)->first();
 
-					$perfil = Perfil::find($codigo->rol_responsable);
+					if ($codigo->rol_alternativo) {
+						
+						$rol_alternativo = RolAlterno::find($codigo->rol_alternativo);
+						$nombre_rol = $rol_alternativo->rol;
 
+					}else{
+
+						$perfil = Perfil::find($codigo->rol_responsable);
+						$nombre_rol = $perfil->nombre;
+					}
+					
 				}
 
 				$temp = [
@@ -83,7 +95,7 @@
 					"qr" => $codigo->path_qr ? true : false,
 					"url" => $codigo->url_qr,
 					"responsable" => $codigo->path_qr ? $empleado->nombre . ' ' . $empleado->apellido : null,
-					"rol" => $codigo->path_qr ? $perfil->nombre : null,
+					"rol" => $codigo->path_qr ? $nombre_rol : null,
 					"qr_path" => $codigo->path_qr,
 					"nit" => $codigo->path_qr ? $empleado->nit : null,
 					"usuario" => $codigo->responsable_firma,
