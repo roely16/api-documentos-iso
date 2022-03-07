@@ -12,6 +12,7 @@
 	use App\EmpleadoPerfil;
 	use App\DocumentoQR;
 	use App\RolAlterno;
+	use App\ResponsableRevision;
 
 	use setasign\Fpdi\Fpdi;
 	
@@ -385,42 +386,72 @@
 					]
 				];
 				
-				$mail_message = "# NUEVO DOCUMENTO. \n Estimado(a) Maura Chintay se le informa que se ha subido un nuevo documento en la plataforma de Documentos ISO.  Los datos del documento agregado son los siguientes:"; 
+				/*
+					* Buscar a los responsables de realizar la revisión en base al proceso 
+				*/
 
-				if ($documento_revision->parent_documentoid) {
+				$responsables_revision = ResponsableRevision::select('responsable')->where('codarea', $documento_revision->codarea)->where('modulo', 2)->groupBy('responsable')->get();
+
+				/*
+					* Por cada responsable enviar un correo electrónico 
+				*/
+
+				foreach ($responsables_revision as $responsable) {
 					
-					// Si el documento es una nueva versión
-					$mail_message = "# NUEVA VERSIÓN. \n Estimado(a) Maura Chintay se le informa que se ha subido una nueva versión del documento **".$documento_revision->nombre."** a la plataforma de Documentos ISO.  Los datos del documento agregado son los siguientes:"; 
+					/* 
+						* Buscar la información del responsable
+					*/
+
+					$encargado_revision = Empleado::where('usuario', $responsable->responsable)->first();
+
+					if ($encargado_revision) {
+						
+						$nombre_encargado = $encargado_revision->nombre . ' ' . $encargado_revision->apellido;
+
+						$mail_message = "# NUEVO DOCUMENTO. \n Estimado(a) " . $nombre_encargado . " se le informa que se ha subido un nuevo documento en la plataforma de Documentos ISO.  Los datos del documento agregado son los siguientes:"; 
+
+						if ($documento_revision->parent_documentoid) {
+							
+							// Si el documento es una nueva versión
+							$mail_message = "# NUEVA VERSIÓN. \n Estimado(a) " . $nombre_encargado . " se le informa que se ha subido una nueva versión del documento **".$documento_revision->nombre."** a la plataforma de Documentos ISO.  Los datos del documento agregado son los siguientes:"; 
+
+						}
+
+						$tipo_documento = TipoDocumento::find($documento_revision->tipodocumentoid);
+						$empleado = Empleado::where('usuario', $documento_revision->elabora)->first();
+
+						if ($encargado_revision->emailmuni) {
+							
+							$mail_data = [
+								[
+									"to" => $encargado_revision->emailmuni,
+									"view" => "mails.confirm",
+									"data" => [
+										"message" => $mail_message,
+										"nombre" => $documento_revision->nombre,
+										"codigo" => $documento_revision->codigo,
+										"tipo" => $tipo_documento->nombre,
+										"version" => $documento_revision->version,
+										"elaborado_por" => $empleado->nombre . ' ' . $empleado->apellido
+									]
+								]
+							];
+	
+							$result = $this->send_mail($mail_data);
+
+						}
+
+					}
 
 				}
 				
-
-				$tipo_documento = TipoDocumento::find($documento_revision->tipodocumentoid);
-				$empleado = Empleado::where('usuario', $documento_revision->elabora)->first();
-
-				$mail_data = [
-					[
-						"to" => "mlchitay@muniguate.com",
-						"view" => "mails.confirm",
-						"data" => [
-							"message" => $mail_message,
-							"nombre" => $documento_revision->nombre,
-							"codigo" => $documento_revision->codigo,
-							"tipo" => $tipo_documento->nombre,
-							"version" => $documento_revision->version,
-							"elaborado_por" => $empleado->nombre . ' ' . $empleado->apellido
-						]
-					]
-				];
-
-				$result = $this->send_mail($mail_data);
 
 				return response()->json($response, 200);
 
 			}
 
 			$response = [
-				"path_preview" => 'http://' . $destinationPath . '/' . $filename,
+				"path_preview" => 'http://' . $destinationPath . '/' . $filename . '#page=99999',
 				"documento" => $documento,
 				"ajustes" => $ajustes,
 				//"qr" => $result,
@@ -543,7 +574,7 @@
 			foreach ($qr as $item) {
 				
 				$line_height = 7;
-				$width = (($specs['width'] / 3) - ($ajustes->margen_horizontal + 25));
+				$width = (($specs['width'] / 3) - ($ajustes->margen_horizontal + $ajustes->altura_fila));
 				$text = $item["responsable"];    
 				$height = ((($pdf->GetStringWidth($text) / $width)) * $line_height);
 
@@ -581,7 +612,7 @@
 			foreach ($qr as $item) {
 				
 				$line_height = 7;
-				$width = (($specs['width'] / 3) - ($ajustes->margen_horizontal + 15));
+				$width = (($specs['width'] / 3) - ($ajustes->margen_horizontal + $ajustes->altura_fila));
 				$text = $item["rol"];    
 				$height = ((($pdf->GetStringWidth($text) / $width)) * $line_height);
 

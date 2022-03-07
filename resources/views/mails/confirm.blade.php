@@ -14,7 +14,7 @@
 
 @endcomponent
 
-@component('mail::button', ['url' => 'muniguate.com', 'color' => 'success'])
+@component('mail::button', ['url' => 'http://udicat.muniguate.com/apps/documentos-iso/#/', 'color' => 'success'])
 Ver
 @endcomponent
 

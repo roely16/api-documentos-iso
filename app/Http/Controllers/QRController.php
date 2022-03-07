@@ -17,10 +17,13 @@
 	use App\DocumentoPortal;
 	use App\TipoDocumento;
 	use App\RolAlterno;
+	use App\ResponsableRevision;
 
 	use Carbon\Carbon;
 
 	use Illuminate\Support\Facades\Crypt;
+
+	use App\Jobs\MailJob;
 
 	use DB;
 
@@ -168,6 +171,54 @@
 
 				$tipo_documento = TipoDocumento::find($documento->tipodocumentoid);
 
+				/* 
+					* Enviar correo indicando que el documento ya fue revisado y se puede publicar 
+				*/
+
+				$responsables_revision = ResponsableRevision::select('responsable')->where('codarea', $documento->codarea)->where('modulo', 3)->groupBy('responsable')->get();
+
+				foreach ($responsables_revision as $responsable) {
+					
+					/* 
+						* Buscar la información del responsable
+					*/
+
+					$encargado_revision = Empleado::where('usuario', $responsable->responsable)->first();
+
+					if ($encargado_revision) {
+						
+						$nombre_encargado = $encargado_revision->nombre . ' ' . $encargado_revision->apellido;
+
+						$mail_message = "# DOCUMENTO REVISADO. \n Estimado(a) " . $nombre_encargado . " se le informa que un nuevo documento ha sido revisado y se encuentra listo para su publicación.  Los datos del documento son los siguientes:"; 
+
+						$tipo_documento = TipoDocumento::find($documento->tipodocumentoid);
+						$empleado = Empleado::where('usuario', $documento->elabora)->first();
+
+						if ($encargado_revision->emailmuni) {
+							
+							$mail_data = [
+								[
+									"to" => $encargado_revision->emailmuni,
+									"view" => "mails.confirm",
+									"data" => [
+										"message" => $mail_message,
+										"nombre" => $documento->nombre,
+										"codigo" => $documento->codigo,
+										"tipo" => $tipo_documento->nombre,
+										"version" => $documento->version,
+										"elaborado_por" => $empleado->nombre . ' ' . $empleado->apellido
+									]
+								]
+							];
+	
+							dispatch(new MailJob($mail_data));
+
+						}
+
+					}
+
+				}
+
 				if ($tipo_documento->generar_qr) {
 					
 					$documento_qr = DocumentoQR::where('id_documento', $data->id_documento)->where('etiqueta', 'revisa')->first();
@@ -177,6 +228,7 @@
 					/*
 						* Buscar si la persona tiene un rol alternativo
 					*/
+
 					$rol_alterno = RolAlterno::where('usuario', $empleado->usuario)->first();
 
 					$perfil = EmpleadoPerfil::where('nit', $empleado->nit)->first();
