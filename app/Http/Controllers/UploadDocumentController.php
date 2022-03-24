@@ -42,7 +42,7 @@
 				
 				$empleado = Empleado::find($request->nit);
 
-				$documentos_revision = DocumentoRevision::where('USUARIOID', $empleado->usuario)->where('PARENT_DOCUMENTOID', null)->orderBy('DOCUMENTOID', 'desc')->get();
+				$documentos_revision = DocumentoRevision::where('CODAREA', $empleado->codarea)->where('PARENT_DOCUMENTOID', null)->orderBy('DOCUMENTOID', 'desc')->get();
 
 				foreach ($documentos_revision as &$documento) {
 					
