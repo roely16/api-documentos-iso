@@ -111,10 +111,12 @@
 
 			$final_pdf = $pdf->Output($dir,'F'); 
 
+			$ssl = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
+
 			$response = [
 				"filename" => $filename,
 				"path" => $path,
-				"destinationPath" => 'http://' . $destinationPath . '/' . $filename
+				"destinationPath" => $ssl . $destinationPath . '/' . $filename
 			];
 
 			return response()->json($response);
@@ -233,7 +235,9 @@
 
 					$perfil = EmpleadoPerfil::where('nit', $empleado->nit)->first();
 
-					$url = 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($data->id_documento) . '/revisa';
+					$ssl = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
+
+					$url = $ssl . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($data->id_documento) . '/revisa';
 
 					$qrCode = new QrCode($url);
 					
@@ -299,7 +303,9 @@
 
 					$perfil = EmpleadoPerfil::where('nit', $empleado->nit)->first();
 
-					$url = 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($data->id_documento) . '/aprueba';
+					$ssl = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
+
+					$url = $ssl . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($data->id_documento) . '/aprueba';
 
 					$qrCode = new QrCode($url);
 					

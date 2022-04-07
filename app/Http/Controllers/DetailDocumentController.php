@@ -43,10 +43,12 @@
 
 			if (!$tipo_documento->generar_qr) {
 
+				$ssl = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
+
 				$response = [
 					"documento" => $documento_revision,
 					"full_document" => $documento,
-					"pdf_path" => 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/' . $documento->documento,
+					"pdf_path" => $ssl . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/' . $documento->documento,
 				];
 
 				return response()->json($response, 200);
@@ -120,10 +122,12 @@
 
 			$result = $upload_controller->create_pdf($data);
 
+			$ssl = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
+
 			$response = [
 				"documento" => $documento_revision,
 				"full_document" => $documento,
-				"pdf_path" => 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/' . $output_path . '#toolbar=0&navpanes=0&scrollbar=0',
+				"pdf_path" => $ssl . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/' . $output_path . '#toolbar=0&navpanes=0&scrollbar=0',
 				"error_pdf" => $result["status"] == 100 ? true : false
 			];
 

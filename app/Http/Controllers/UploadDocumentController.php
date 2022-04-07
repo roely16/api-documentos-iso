@@ -154,6 +154,8 @@
 
 		public function upload_document(Request $request){
 
+			$ssl = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
+
 			$documento = json_decode($request->documento);
 
 			$ajustes = json_decode($request->settings);
@@ -314,7 +316,7 @@
 								"tag" => "elabora",
 								"label" => "Elabora",
 								"qr" => true,
-								"url" => 'http://' . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($documento_revision->DOCUMENTOID) . '/elabora',
+								"url" => $ssl . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($documento_revision->DOCUMENTOID) . '/elabora',
 								"responsable" => $empleado->nombre. ' ' . $empleado->apellido,
 								"rol" => $rol_alterno  ? $rol_alterno->rol : ($empleado_perfil ? $empleado_perfil->nombre : null),
 								"qr_path" => null,
@@ -451,7 +453,7 @@
 			}
 
 			$response = [
-				"path_preview" => 'http://' . $destinationPath . '/' . $filename . '#page=99999',
+				"path_preview" => $ssl . $destinationPath . '/' . $filename . '#page=99999',
 				"documento" => $documento,
 				"ajustes" => $ajustes,
 				//"qr" => $result,
@@ -574,7 +576,7 @@
 			foreach ($qr as $item) {
 				
 				$line_height = 7;
-				$width = (($specs['width'] / 3) - ($ajustes->margen_horizontal + $ajustes->altura_fila));
+				$width = (($specs['width'] / 3) - ($ajustes->margen_horizontal + 30));
 				$text = $item["responsable"];    
 				$height = ((($pdf->GetStringWidth($text) / $width)) * $line_height);
 
@@ -612,7 +614,7 @@
 			foreach ($qr as $item) {
 				
 				$line_height = 7;
-				$width = (($specs['width'] / 3) - ($ajustes->margen_horizontal + $ajustes->altura_fila));
+				$width = (($specs['width'] / 3) - ($ajustes->margen_horizontal + 30));
 				$text = $item["rol"];    
 				$height = ((($pdf->GetStringWidth($text) / $width)) * $line_height);
 
