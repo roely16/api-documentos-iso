@@ -12,6 +12,7 @@
 	use App\DocumentoQR;
 	use App\Perfil;
 	use App\RolAlterno;
+	use App\DocumentoPortal;
 
 	use DB;
 
@@ -132,6 +133,49 @@
 			];
 
 			return response()->json($response, 200);
+
+		}
+
+		public function get_detail_edit(Request $request){
+
+			$documento_revision = DocumentoRevision::find($request->id);
+
+			return response()->json($documento_revision);
+
+		}
+
+		public function update_detail_info(Request $request){
+
+			try {
+				
+				// Actualizar los documentos que son para revisión
+
+				$result = DB::connection('portales')->table('ISO_DOCUMENTOS_REVISION')
+						->where('DOCUMENTOID', $request->documentoid)
+						->orWhere('PARENT_DOCUMENTOID', $request->documentoid)
+						->update([
+							'nombre' => $request->nombre
+						]);
+
+				// Formar el nuevo nombre que tendra en el portal
+				$documento = DocumentoRevision::find($request->documentoid);
+
+				$nombre_portal = $documento->codigo . ' ' . $documento->nombre;
+
+				// Actualizar en la tabla de documentos publicados en el portal
+				$result = DocumentoPortal::where('codigo', $documento->codigo)
+							->where('deleted_at', null)
+							->update([
+								'nombre' => $nombre_portal
+							]);		
+
+				return response()->json($result, 200);
+
+			} catch (\Throwable $th) {
+				
+				return response()->json($th->getMessage, 400);
+
+			}
 
 		}
 

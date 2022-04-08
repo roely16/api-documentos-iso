@@ -93,3 +93,9 @@ $router->post('/check_qr_document_type', 'DocumentVersionController@check_qr_doc
 
 // Descargar el documento en PDF o el Original
 $router->get('/download_document/{id}/{option}', 'DocumentVersionController@download_document');
+
+// Obtener el detalle del documento para editar la información principal
+$router->post('/get_detail_edit', 'DetailDocumentController@get_detail_edit');
+
+// Actualizar la información principal de un documento ISO 
+$router->post('/update_detail_info', 'DetailDocumentController@update_detail_info');

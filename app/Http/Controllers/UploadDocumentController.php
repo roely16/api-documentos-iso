@@ -65,6 +65,8 @@
 
 					}
 
+					//$documento->nombre = utf8_encode($documento->nombre);
+
 					$documento->estado = $estado;
 					$documento->versiones = $versiones;
 
