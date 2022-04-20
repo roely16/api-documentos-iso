@@ -17,7 +17,7 @@
 
 			if ($request->area) {
 				
-				$documentos_revision = DocumentoRevision::where('CODAREA', $request->area)->where('PARENT_DOCUMENTOID', null)->orderBy('DOCUMENTOID', 'desc')->get();
+				$documentos_revision = DocumentoRevision::where('CODAREA', $request->area)->where('PARENT_DOCUMENTOID', null)->where('BAJA', '0')->orderBy('DOCUMENTOID', 'desc')->get();
 
 			}else{
 
@@ -40,6 +40,7 @@
 				$documentos_revision = DocumentoRevision
 										::where('PARENT_DOCUMENTOID', null)
 										->whereIn('CODAREA', $areas)
+										->where('BAJA', '0')
 										->orderBy('DOCUMENTOID', 'desc')
 										->get();
 
