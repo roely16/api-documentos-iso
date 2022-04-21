@@ -27,7 +27,8 @@
 						->first();
 
 			$response = [
-				"access" => $permiso ? true : false
+				"access" => $permiso ? true : false,
+				"editable" => $menu_op->editable == 'S' ? true : false
 			];
 
 			return response()->json($response);
