@@ -99,3 +99,6 @@ $router->post('/get_detail_edit', 'DetailDocumentController@get_detail_edit');
 
 // Actualizar la información principal de un documento ISO 
 $router->post('/update_detail_info', 'DetailDocumentController@update_detail_info');
+
+// Validar que el código del documento no exista tanto en documentos en revisión como en los publicados
+$router->post('/check_code', 'CodigoController@check_code');
