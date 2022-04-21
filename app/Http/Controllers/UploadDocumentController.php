@@ -134,6 +134,12 @@
 
 			$tipos_documento = TipoDocumento::orderBy('tipodocumentoid', 'asc')->get();
 
+			foreach ($tipos_documento as &$tipo) {
+				
+				$tipo->nombre = $tipo->nombre . ' (' . $tipo->nomenclatura . ')';
+
+			}
+
 			$tipo_almacenamiento = ["Físico", "Digital"];
 
 			$empleado = Empleado::find($request->nit);
