@@ -102,3 +102,12 @@ $router->post('/update_detail_info', 'DetailDocumentController@update_detail_inf
 
 // Validar que el código del documento no exista tanto en documentos en revisión como en los publicados
 $router->post('/check_code', 'CodigoController@check_code');
+
+// Obtener las secciones del portal ISO
+$router->post('/get_iso_sections', 'DepurationController@get_iso_sections');
+
+// Obtener los documentos publicados de una sección
+$router->post('/get_section_documents', 'DepurationController@get_section_documents');
+
+// Eliminar documentos del portal ISO
+$router->post('/delete_documents_portal', 'DepurationController@delete_documents_portal');
