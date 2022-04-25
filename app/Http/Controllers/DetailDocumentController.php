@@ -51,7 +51,7 @@
 				$response = [
 					"documento" => $documento_revision,
 					"full_document" => $documento,
-					"pdf_path" => $ssl . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/' . $documento->documento,
+					"pdf_path" => $documento->documento,
 				];
 
 				return response()->json($response, 200);
@@ -130,7 +130,7 @@
 			$response = [
 				"documento" => $documento_revision,
 				"full_document" => $documento,
-				"pdf_path" => $ssl . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/' . $output_path . '#toolbar=0&navpanes=0&scrollbar=0',
+				"pdf_path" => $output_path . '#toolbar=0&navpanes=0&scrollbar=0',
 				"error_pdf" => $result["status"] == 100 ? true : false
 			];
 

@@ -182,7 +182,7 @@
 			$path = 'temp_files';
 
 			// URL para su lectura 
-			$destinationPath = $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/' . $path;
+			$destinationPath = $path;
 
 			$file = $request->file('file');
 
@@ -329,7 +329,7 @@
 								"tag" => "elabora",
 								"label" => "Elabora",
 								"qr" => true,
-								"url" => $ssl . $_SERVER['HTTP_HOST'] . '/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($documento_revision->DOCUMENTOID) . '/elabora',
+								"url" => 'verificar_documento/' . Crypt::encrypt($documento_revision->DOCUMENTOID) . '/elabora',
 								"responsable" => $empleado->nombre. ' ' . $empleado->apellido,
 								"rol" => $rol_alterno  ? $rol_alterno->rol : ($empleado_perfil ? $empleado_perfil->nombre : null),
 								"qr_path" => null,
@@ -466,7 +466,7 @@
 			}
 
 			$response = [
-				"path_preview" => $ssl . $destinationPath . '/' . $filename . '#page=99999',
+				"path_preview" => $destinationPath . '/' . $filename . '#page=99999',
 				"documento" => $documento,
 				"ajustes" => $ajustes,
 				//"qr" => $result,
