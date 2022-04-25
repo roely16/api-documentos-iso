@@ -26,7 +26,7 @@
 				$documentos_revision = DocumentoRevision
 										::where('CODAREA', $request->area)
 										->where('BAJA', '0')
-										->whereIn('ESTADOID', [4])
+										->whereIn('ESTADOID', [4,6])
 										->orderBy('DOCUMENTOID', 'desc')
 										->get();
 
@@ -48,7 +48,7 @@
 							->toArray();
 
 				$documentos_revision = DocumentoRevision
-										::whereIn('ESTADOID', [4])
+										::whereIn('ESTADOID', [4,6])
 										->whereIn('CODAREA', $areas)
 										->where('BAJA', '0')
 										->orderBy('DOCUMENTOID', 'desc')

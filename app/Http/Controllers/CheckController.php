@@ -15,9 +15,23 @@
 
 		public function fetch_documents_check(Request $request){
 
+			// Definición de estados para modulo de verificación y verificación de forma
+
+			$estados = $request->module === 'verificacion' ? [1,2] : [1,2];
+
+			$tipos_documentos = $request->module === 'verificacion' ? TipoDocumento::select('tipodocumentoid')->where('generar_qr','S')->get()->pluck('tipodocumentoid')  : TipoDocumento::select('tipodocumentoid')->where('generar_qr', NULL)->get()->pluck('tipodocumentoid');
+
+			//return response()->json($tipos_documentos);
+
 			if ($request->area) {
 				
-				$documentos_revision = DocumentoRevision::where('CODAREA', $request->area)->where('PARENT_DOCUMENTOID', null)->where('BAJA', '0')->orderBy('DOCUMENTOID', 'desc')->get();
+				$documentos_revision = DocumentoRevision::where('CODAREA', $request->area)
+										->where('PARENT_DOCUMENTOID', null)
+										->where('BAJA', '0')
+										->whereIn('ESTADOID', $estados)
+										->whereIn('TIPODOCUMENTOID', $tipos_documentos)
+										->orderBy('DOCUMENTOID', 'desc')
+										->get();
 
 			}else{
 
@@ -41,6 +55,8 @@
 										::where('PARENT_DOCUMENTOID', null)
 										->whereIn('CODAREA', $areas)
 										->where('BAJA', '0')
+										->whereIn('ESTADOID', $estados)
+										->whereIn('TIPODOCUMENTOID', $tipos_documentos)
 										->orderBy('DOCUMENTOID', 'desc')
 										->get();
 
