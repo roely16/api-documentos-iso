@@ -111,3 +111,6 @@ $router->post('/get_section_documents', 'DepurationController@get_section_docume
 
 // Eliminar documentos del portal ISO
 $router->post('/delete_documents_portal', 'DepurationController@delete_documents_portal');
+
+// Eliminar documentos
+$router->post('/delete_document', 'DetailDocumentController@delete_document');

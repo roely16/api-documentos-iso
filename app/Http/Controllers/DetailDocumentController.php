@@ -14,6 +14,8 @@
 	use App\RolAlterno;
 	use App\DocumentoPortal;
 
+	use Carbon\Carbon;
+
 	use DB;
 
 	use App\Http\Controllers\UploadDocumentController;
@@ -189,6 +191,24 @@
 				return response()->json($th->getMessage, 400);
 
 			}
+
+		}
+
+		public function delete_document(Request $request){
+
+			$result = DB::connection('portales')
+						->table('iso_documentos_revision')
+						->where('documentoid', $request->id)
+						->orWhere('parent_documentoid', $request->id)
+						->update([
+							"deleted_at" => Carbon::now()
+						]);
+
+			$response = [
+				"deleted" => $result
+			];
+
+			return response()->json($response);
 
 		}
 
