@@ -32,6 +32,25 @@
 
 		public function check_code(Request $request){
 
+			if ($request->edit) {
+				
+				$documentos_revision = DocumentoRevision::where('codigo', $request->code)
+									->where('baja', '0')
+									->where('documentoid', '!=', $request->id)
+									->count();
+
+				$available = $documentos_revision == 0 ? true : false;
+
+				$response = [
+					"available" => $available,
+					"type" => $available ? 'success' : 'error',
+					"message" => $available ? 'El código ingresado se encuentra disponible' : 'El código asignado al documento ya ha sido utilizado. Por favor elija otro. '
+				];
+
+				return response()->json($response);
+
+			}
+
 			$documentos_revision = DocumentoRevision::where('codigo', $request->code)
 									->where('baja', '0')
 									->count();

@@ -140,6 +140,13 @@
 
 			$documento_revision = DocumentoRevision::find($request->id);
 
+			//Separar el código del documento para su edición 
+			$arr_codigo = explode('-', $documento_revision->codigo);
+
+			$documento_revision->codigo_tipo = $arr_codigo[0];
+			$documento_revision->codigo_seccion = $arr_codigo[1];
+			$documento_revision->codigo_numero = $arr_codigo[2];
+
 			return response()->json($documento_revision);
 
 		}
@@ -147,14 +154,19 @@
 		public function update_detail_info(Request $request){
 
 			try {
-				
+
+				// Formar el nuevo código
+				$codigo = $request->codigo_tipo . '-' . $request->codigo_seccion . '-' . $request->codigo_numero;
+
 				// Actualizar los documentos que son para revisión
 
 				$result = DB::connection('portales')->table('ISO_DOCUMENTOS_REVISION')
 						->where('DOCUMENTOID', $request->documentoid)
 						->orWhere('PARENT_DOCUMENTOID', $request->documentoid)
 						->update([
-							'nombre' => $request->nombre
+							'nombre' => $request->nombre,
+							'comentarios' => $request->comentarios,
+							'codigo' => $codigo
 						]);
 
 				// Formar el nuevo nombre que tendra en el portal
@@ -163,10 +175,11 @@
 				$nombre_portal = $documento->codigo . ' ' . $documento->nombre;
 
 				// Actualizar en la tabla de documentos publicados en el portal
-				$result = DocumentoPortal::where('codigo', $documento->codigo)
+				$result = DocumentoPortal::where('codigo', $request->codigo)
 							->where('deleted_at', null)
 							->update([
-								'nombre' => $nombre_portal
+								'nombre' => $nombre_portal,
+								'codigo' => $documento->codigo
 							]);		
 
 				return response()->json($result, 200);
