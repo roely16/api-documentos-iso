@@ -9,6 +9,7 @@
 	use App\Area;
 	use App\DocumentoRevision;
 	use App\DocumentoPortal;
+	use App\ISOSeccion;
 
 	class CodigoController extends Controller{
 		
@@ -32,12 +33,16 @@
 
 		public function check_code(Request $request){
 
+			// Buscar por sección en Documentos ISO
+			$iso_seccion = ISOSeccion::where('codarea', $request->codarea)->first();
+
 			if ($request->edit) {
 				
 				$documentos_revision = DocumentoRevision::where('codigo', $request->code)
-									->where('baja', '0')
-									->where('documentoid', '!=', $request->id)
-									->count();
+										->where('baja', '0')
+										->where('documentoid', '!=', $request->id)
+										->where('deleted_at', null)
+										->count();
 
 				$available = $documentos_revision == 0 ? true : false;
 
@@ -53,9 +58,11 @@
 
 			$documentos_revision = DocumentoRevision::where('codigo', $request->code)
 									->where('baja', '0')
+									->where('deleted_at', null)
 									->count();
 
 			$documentos_portal = DocumentoPortal::where('codigo', $request->code)
+									->where('categoriaid', $iso_seccion->seccionid)
 									->where('deleted_at', null)
 									->count();
 
