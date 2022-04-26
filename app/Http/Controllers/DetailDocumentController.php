@@ -44,6 +44,9 @@
 			// Buscar el documento
 			$documento = DocumentoRevision::find($request->id);
 
+			// Validar si tiene versiones
+			$versiones_ = DocumentoRevision::where('parent_documentoid', $documento->documentoid)->orderBy('documentoid', 'desc')->get();
+
 			if (!$tipo_documento->generar_qr) {
 
 				$ssl = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
@@ -51,7 +54,7 @@
 				$response = [
 					"documento" => $documento_revision,
 					"full_document" => $documento,
-					"pdf_path" => $documento->documento,
+					"pdf_path" => $versiones_->count() > 0 ?  $versiones_[0]->documento : $documento->documento,
 				];
 
 				return response()->json($response, 200);

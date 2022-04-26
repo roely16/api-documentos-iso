@@ -32,7 +32,8 @@
 											usuarioid, 
 											elabora,
 											tipodocumentoid,
-											TO_CHAR(created_at, 'DD/MM/YYYY HH24:MI:SS') as created_at"
+											TO_CHAR(created_at, 'DD/MM/YYYY HH24:MI:SS') as created_at,
+											documento"
 										))
 						->where('documentoid', $request->id)
 						->orWhere('parent_documentoid', $request->id)
