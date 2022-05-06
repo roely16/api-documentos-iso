@@ -61,12 +61,16 @@
 									->where('deleted_at', null)
 									->count();
 
-			$documentos_portal = DocumentoPortal::where('codigo', $request->code)
-									->where('categoriaid', $iso_seccion->seccionid)
-									->where('deleted_at', null)
-									->count();
+			// if ($documentos_revision > 0) {
+				
+			// 	$documentos_portal = DocumentoPortal::where('codigo', $request->code)
+			// 						->where('categoriaid', $iso_seccion->seccionid)
+			// 						->where('deleted_at', null)
+			// 						->count();
 
-			$available = $documentos_revision == 0 && $documentos_portal == 0 ? true : false;
+			// }
+
+			$available = $documentos_revision == 0 ? true : false;
 
 			$response = [
 				"available" => $available,
