@@ -31,8 +31,8 @@
 			if ($request->area) {
 				
 				$documentos_revision = DocumentoRevision::where('CODAREA', $request->area)
-										->where('PARENT_DOCUMENTOID', null)
-										->where('BAJA', '0')
+										// ->where('PARENT_DOCUMENTOID', null)
+										::where('BAJA', '0')
 										->where('DELETED_AT', NULL)
 										->whereIn('ESTADOID', $estados)
 										->whereIn('TIPODOCUMENTOID', $tipos_documentos)
@@ -58,8 +58,8 @@
 							->toArray();
 
 				$documentos_revision = DocumentoRevision
-										::where('PARENT_DOCUMENTOID', null)
-										->whereIn('CODAREA', $areas)
+										// ::where('PARENT_DOCUMENTOID', null)
+										::whereIn('CODAREA', $areas)
 										->where('BAJA', '0')
 										->where('DELETED_AT', NULL)
 										->whereIn('ESTADOID', $estados)
@@ -71,24 +71,21 @@
 
 			foreach ($documentos_revision as &$documento) {
 				
+				/*
+					Si el documento tiene PARENT_ID
+				*/
+
+				if ($documento->parent_documentoid) {
+					
+					$documento->documentoid = $documento->parent_documentoid;
+
+				}
+
 				$tipo_documento = TipoDocumento::find($documento->tipodocumentoid);
 
 				$documento->tipo_documento = $tipo_documento ? $tipo_documento->nombre : null;
 
-				// Validar si no tiene versiones 
-				$versiones = DocumentoRevision::where('parent_documentoid', $documento->documentoid)->orderBy('documentoid', 'desc')->get();
-
-				if ($versiones->count() > 0) {
-					
-					$child_document = $versiones[0];
-
-					$estado = EstadoDocumento::find($child_document->estadoid);
-
-				}else{
-
-					$estado = EstadoDocumento::find($documento->estadoid);
-
-				}
+				$estado = EstadoDocumento::find($documento->estadoid);
 
 				$documento->estado = $estado;
 
