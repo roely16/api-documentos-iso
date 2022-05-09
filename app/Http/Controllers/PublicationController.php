@@ -89,25 +89,27 @@
 				*/
 
 				// Validar si no tiene versiones 
-				$versiones = DocumentoRevision::where('parent_documentoid', $documento->documentoid)->orderBy('documentoid', 'desc')->get();
+				// $versiones = DocumentoRevision::where('parent_documentoid', $documento->documentoid)->orderBy('documentoid', 'desc')->get();
 
-				$documento->versiones = $versiones;
+				// $documento->versiones = $versiones;
 
-				if ($versiones->count() > 0) {
+				// if ($versiones->count() > 0) {
 					
-					$child_document = $versiones[0];
+				// 	$child_document = $versiones[0];
 
-					if ($child_document->estadoid == 4 || $child_document->estadoid == 5) {
+				// 	if ($child_document->estadoid == 4 || $child_document->estadoid == 5) {
 						
-						$documentos [] = $documento;
+				// 		$documentos [] = $documento;
 
-					}
+				// 	}
 
-				}else{
+				// }else{
 
-					$documentos [] = $documento;
+					
 
-				}
+				// }
+
+				$documentos [] = $documento;
 
 			}
 
