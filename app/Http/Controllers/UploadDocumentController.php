@@ -329,7 +329,7 @@
 								"tag" => "elabora",
 								"label" => "Elabora",
 								"qr" => true,
-								"url" => 'verificar_documento/' . Crypt::encrypt($documento_revision->DOCUMENTOID) . '/elabora',
+								"url" => 'http://udicat.muniguate.com/apis/api-documentos-iso/public/verificar_documento/' . Crypt::encrypt($documento_revision->DOCUMENTOID) . '/elabora',
 								"responsable" => $empleado->nombre. ' ' . $empleado->apellido,
 								"rol" => $rol_alterno  ? $rol_alterno->rol : ($empleado_perfil ? $empleado_perfil->nombre : null),
 								"qr_path" => null,

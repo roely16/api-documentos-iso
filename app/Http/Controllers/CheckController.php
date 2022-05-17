@@ -32,7 +32,7 @@
 				
 				$documentos_revision = DocumentoRevision::where('CODAREA', $request->area)
 										// ->where('PARENT_DOCUMENTOID', null)
-										::where('BAJA', '0')
+										->where('BAJA', '0')
 										->where('DELETED_AT', NULL)
 										->whereIn('ESTADOID', $estados)
 										->whereIn('TIPODOCUMENTOID', $tipos_documentos)

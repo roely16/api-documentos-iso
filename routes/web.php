@@ -114,3 +114,6 @@ $router->post('/delete_documents_portal', 'DepurationController@delete_documents
 
 // Eliminar documentos
 $router->post('/delete_document', 'DetailDocumentController@delete_document');
+
+// Corregir los códigos QR
+$router->get('/fix_qr', 'FixQRController@fix_qr');
