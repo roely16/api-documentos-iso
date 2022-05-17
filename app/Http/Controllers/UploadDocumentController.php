@@ -42,8 +42,11 @@
 				
 				$empleado = Empleado::find($request->nit);
 
-				$documentos_revision = DocumentoRevision::where('CODAREA', $empleado->codarea)
-										->orWhere('USUARIOID', $empleado->usuario)
+				$documentos_revision = DocumentoRevision
+										::where(function($query) use ($empleado){
+											$query->where('codarea', $empleado->codarea)
+													->orWhere('usuarioid', $empleado->usuario);
+										})
 										->where('PARENT_DOCUMENTOID', null)
 										->where('BAJA', '0')
 										->where('DELETED_AT', NULL)
