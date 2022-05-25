@@ -24,6 +24,16 @@
 
 			$estados = $request->module === 'verificacion' ? [1,2] : [1,2,4];
 
+			if ($request->module === 'admin') {
+				
+				$estados = [1,2,3,4,5,6];
+			}
+
+			/*
+				Si el modulo es Revisión de forma se deberán de mostrar todos los tipos de documentos
+				En el modulo de Revisión únicamente aquellos que llevan código QR
+			*/
+
 			$tipos_documentos = $request->module === 'verificacion' ? TipoDocumento::select('tipodocumentoid')->where('generar_qr','S')->get()->pluck('tipodocumentoid')  : TipoDocumento::select('tipodocumentoid')->get()->pluck('tipodocumentoid');
 
 			//return response()->json($tipos_documentos);
@@ -31,7 +41,6 @@
 			if ($request->area) {
 				
 				$documentos_revision = DocumentoRevision::where('CODAREA', $request->area)
-										// ->where('PARENT_DOCUMENTOID', null)
 										->where('BAJA', '0')
 										->where('DELETED_AT', NULL)
 										->whereIn('ESTADOID', $estados)
@@ -58,7 +67,6 @@
 							->toArray();
 
 				$documentos_revision = DocumentoRevision
-										// ::where('PARENT_DOCUMENTOID', null)
 										::whereIn('CODAREA', $areas)
 										->where('BAJA', '0')
 										->where('DELETED_AT', NULL)

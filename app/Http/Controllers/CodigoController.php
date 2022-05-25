@@ -49,7 +49,7 @@
 				$response = [
 					"available" => $available,
 					"type" => $available ? 'success' : 'error',
-					"message" => $available ? 'El código ingresado se encuentra disponible' : 'El código asignado al documento ya ha sido utilizado. Por favor elija otro. '
+					"message" => $available ? 'El código ' .$request->code. ' se encuentra disponible' : 'El código ' .$request->code. ' ya ha sido utilizado. Por favor elija otro. '
 				];
 
 				return response()->json($response);
@@ -75,7 +75,7 @@
 			$response = [
 				"available" => $available,
 				"type" => $available ? 'success' : 'error',
-				"message" => $available ? 'El código ingresado se encuentra disponible' : 'El código asignado al documento ya ha sido utilizado. Por favor elija otro. '
+				"message" => $available ? 'El código ' .$request->code. ' se encuentra disponible' : 'El código ' .$request->code. ' ya ha sido utilizado. Por favor elija otro. '
  			];
 
 			return response()->json($response);
