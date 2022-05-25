@@ -16,18 +16,9 @@
 
 	use setasign\Fpdi\Fpdi;
 	
-	use DB;
+	use Illuminate\Support\Facades\DB;
 
-	use Endroid\QrCode\ErrorCorrectionLevel;
-	use Endroid\QrCode\LabelAlignment;
 	use Endroid\QrCode\QrCode;
-	use Endroid\QrCode\Response\QrCodeResponse;
-
-	use Illuminate\Support\Facades\Storage;
-
-	// Jobs
-	use App\Jobs\CreatePDF;
-	use App\Jobs\CreateQR;
 
 	use Illuminate\Support\Facades\Crypt;
 	use Carbon\Carbon;
@@ -42,8 +33,7 @@
 				
 				$empleado = Empleado::find($request->nit);
 
-				$documentos_revision = DocumentoRevision
-										::where(function($query) use ($empleado){
+				$documentos_revision = DocumentoRevision::where(function($query) use ($empleado){
 											$query->where('codarea', $empleado->codarea)
 													->orWhere('usuarioid', $empleado->usuario);
 										})

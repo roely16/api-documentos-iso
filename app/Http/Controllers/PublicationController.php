@@ -23,8 +23,7 @@
 
 			if ($request->area) {
 
-				$documentos_revision = DocumentoRevision
-										::where('CODAREA', $request->area)
+				$documentos_revision = DocumentoRevision::where('CODAREA', $request->area)
 										->where('BAJA', '0')
 										->where('DELETED_AT', NULL)
 										->whereIn('ESTADOID', [6])
@@ -37,8 +36,7 @@
 
 				$areas = Area::select('codarea')
 							->where('estatus', 'A')
-							->whereIn('codarea', ResponsableRevision
-													::select('codarea')
+							->whereIn('codarea', ResponsableRevision::select('codarea')
 													->where('responsable', $request->usuario)
 													->where('modulo', $menu->id)
 													->get()
@@ -48,8 +46,7 @@
 							->get()
 							->toArray();
 
-				$documentos_revision = DocumentoRevision
-										::whereIn('ESTADOID', [6])
+				$documentos_revision = DocumentoRevision::whereIn('ESTADOID', [6])
 										->whereIn('CODAREA', $areas)
 										->where('BAJA', '0')
 										->where('DELETED_AT', NULL)

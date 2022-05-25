@@ -11,52 +11,37 @@
 	use App\Area;
 	use App\Menu;
 
+	use Illuminate\Support\Facades\DB;
+
 	class CheckController extends Controller{
 
 		public function fetch_documents_check(Request $request){
 
-			// Definición de estados para modulo de verificación y verificación de forma
+			/* 
+				* Para determinar los estados se debe de realizar una consulta en base al módulo al que el usuario esta accediendo.
 
-			/*
-				Si es un documento con QR deberán de ser aquellos documentos que ya fueron firmados,
-				Si son documento sin QR deberán de ser aquellos que han sido subidos 
+				* En el módulo de Verificación se mostrarán aquellos documentos que requieren QR y que están en estado (1, 2)
+
+				* En el módulo de Verificación de Forma pasan todos los documentos bajo las siguientes condiciones:
+					- Documentos QR cuando ya han sido verificados, es decir, están en estado (4)
+					- Documentos sin QR se deberán de mostrar desde que son subidos, es decir, están en estado (1,2)
 			*/
 
-			$estados = $request->module === 'verificacion' ? [1,2] : [1,2,4];
+			// * Validar las áreas de las cuales se deben de obtener los documentos
 
-			if ($request->module === 'admin') {
-				
-				$estados = [1,2,3,4,5,6];
-			}
-
-			/*
-				Si el modulo es Revisión de forma se deberán de mostrar todos los tipos de documentos
-				En el modulo de Revisión únicamente aquellos que llevan código QR
-			*/
-
-			$tipos_documentos = $request->module === 'verificacion' ? TipoDocumento::select('tipodocumentoid')->where('generar_qr','S')->get()->pluck('tipodocumentoid')  : TipoDocumento::select('tipodocumentoid')->get()->pluck('tipodocumentoid');
-
-			//return response()->json($tipos_documentos);
-
+			$areas = [];
+					
 			if ($request->area) {
 				
-				$documentos_revision = DocumentoRevision::where('CODAREA', $request->area)
-										->where('BAJA', '0')
-										->where('DELETED_AT', NULL)
-										->whereIn('ESTADOID', $estados)
-										->whereIn('TIPODOCUMENTOID', $tipos_documentos)
-										->orderBy('DOCUMENTOID', 'desc')
-										->get();
+				$areas [] = $request->area;
 
 			}else{
 
-				// Obtener las áreas o secciones asignadas
 				$menu = Menu::where('name', $request->module)->first();
 
 				$areas = Area::select('codarea')
 							->where('estatus', 'A')
-							->whereIn('codarea', ResponsableRevision
-													::select('codarea')
+							->whereIn('codarea', ResponsableRevision::select('codarea')
 													->where('responsable', $request->usuario)
 													->where('modulo', $menu->id)
 													->get()
@@ -64,38 +49,91 @@
 							)
 							->orderBy('codarea', 'asc')
 							->get()
+							->pluck('codarea')
 							->toArray();
+							
+			}
 
-				$documentos_revision = DocumentoRevision
-										::whereIn('CODAREA', $areas)
-										->where('BAJA', '0')
-										->where('DELETED_AT', NULL)
-										->whereIn('ESTADOID', $estados)
-										->whereIn('TIPODOCUMENTOID', $tipos_documentos)
-										->orderBy('DOCUMENTOID', 'desc')
-										->get();
+			$str_areas = implode(",", $areas);
+
+			if ($request->module === 'admin') {
+				
+				$sql = "SELECT *
+						FROM iso_documentos_revision
+						WHERE baja = '0'
+						AND deleted_at IS NULL
+						AND codarea IN ($str_areas)
+						ORDER BY documentoid DESC";
+				
+			}elseif ($request->module === 'revision_forma') {
+				
+				$sql = "SELECT *
+						FROM iso_documentos_revision
+						WHERE (
+							tipodocumentoid IN (
+								SELECT tipodocumentoid
+								FROM iso_tipos_documentos
+								WHERE generar_qr IS NOT NULL
+							)
+							AND estadoid = 4
+							AND deleted_at IS NULL
+							AND baja = '0'
+							AND codarea IN ($str_areas)
+						)
+						OR (
+							tipodocumentoid IN (
+								SELECT tipodocumentoid
+								FROM iso_tipos_documentos
+								WHERE generar_qr IS NULL
+							)
+							AND estadoid IN (1, 2)
+							AND deleted_at IS NULL
+							AND baja = '0'
+							AND codarea IN ($str_areas)
+						)";
+
+			}else{
+
+				$sql = "SELECT *
+						FROM iso_documentos_revision
+						WHERE tipodocumentoid IN (
+							SELECT tipodocumentoid
+							FROM iso_tipos_documentos
+							WHERE generar_qr IS NOT NULL
+						)
+						AND estadoid IN (1,2)
+						AND deleted_at IS NULL
+						AND baja = '0'
+						AND codarea IN ($str_areas)";
 
 			}
 
+			$documentos_revision = DB::connection('portales')->select($sql);
+
 			foreach ($documentos_revision as &$documento) {
 				
-				/*
-					Si el documento tiene PARENT_ID
-				*/
+				// Validar si no tiene versiones
 
-				if ($documento->parent_documentoid) {
+				$versiones = DocumentoRevision::where('parent_documentoid', $documento->documentoid)->orderBy('documentoid', 'desc')->get();
+
+				if ($versiones->count() > 0) {
 					
-					$documento->documentoid = $documento->parent_documentoid;
+					$child_document = $versiones[0];
+
+					$estado = EstadoDocumento::find($child_document->estadoid);
+
+				}else{
+
+					$estado = EstadoDocumento::find($documento->estadoid);
 
 				}
+
+				$documento->estado = $estado;
+				$documento->versiones = $versiones;
 
 				$tipo_documento = TipoDocumento::find($documento->tipodocumentoid);
 
 				$documento->tipo_documento = $tipo_documento ? $tipo_documento->nombre : null;
-
-				$estado = EstadoDocumento::find($documento->estadoid);
-
-				$documento->estado = $estado;
 
 				$area = Area::find($documento->codarea);
 
