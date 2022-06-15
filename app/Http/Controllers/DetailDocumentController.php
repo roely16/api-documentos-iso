@@ -24,8 +24,7 @@
 
 		public function get_detail(Request $request){
 
-			$documento_revision = DocumentoRevision
-									::select(DB::raw('
+			$documento_revision = DocumentoRevision::select(DB::raw('
 										codigo as "código",
 										nombre,
 										codarea as "sección",
@@ -47,14 +46,17 @@
 			// Validar si tiene versiones
 			$versiones_ = DocumentoRevision::where('parent_documentoid', $documento->documentoid)->orderBy('documentoid', 'desc')->get();
 
+			//$documento = $versiones_->count() > 0 ?  $versiones_[0] : $documento;
+
 			if (!$tipo_documento->generar_qr) {
 
-				$ssl = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
+				$documento->version = $versiones_->count() > 0 ?  $versiones_[0]->version : $documento->version;
 
 				$response = [
 					"documento" => $documento_revision,
 					"full_document" => $documento,
 					"pdf_path" => $versiones_->count() > 0 ?  $versiones_[0]->documento : $documento->documento,
+					'versiones' => $versiones_
 				];
 
 				return response()->json($response, 200);
@@ -128,8 +130,8 @@
 
 			$result = $upload_controller->create_pdf($data);
 
-			$ssl = isset($_SERVER['HTTPS']) ? 'https://' : 'http://';
-
+			$documento->version = $versiones_->count() > 0 ?  $versiones_[0]->version : $documento->version;
+			
 			$response = [
 				"documento" => $documento_revision,
 				"full_document" => $documento,

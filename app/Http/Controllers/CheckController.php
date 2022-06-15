@@ -56,6 +56,11 @@
 
 			$str_areas = implode(",", $areas);
 
+			if (count($areas) == 0) {
+				
+				$str_areas = 'null';
+			}
+
 			if ($request->module === 'admin') {
 				
 				$sql = "SELECT *
@@ -63,6 +68,7 @@
 						WHERE baja = '0'
 						AND deleted_at IS NULL
 						AND codarea IN ($str_areas)
+						AND PARENT_DOCUMENTOID IS NULL
 						ORDER BY documentoid DESC";
 				
 			}elseif ($request->module === 'revision_forma') {
